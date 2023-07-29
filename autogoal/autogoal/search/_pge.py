@@ -1,6 +1,6 @@
 import statistics
 import abc
-
+import json
 from typing import Mapping, Optional, Dict, List, Sequence
 from autogoal.sampling import ModelSampler, best_indices, merge_updates, update_model
 from ._base import SearchAlgorithm
@@ -62,7 +62,10 @@ class PESearch(SearchAlgorithm):
 
         # Update the probabilistic model with the marginal model from the best pipelines
         self._model = update_model(self._model, updates, self._learning_factor)
-
+        
+        json_model = json.dumps(self._model)
+        with open ('probabilistic_model.json', 'w') as model:
+            model.write(json_model)
         # save an internal state of metaheuristic for other executions
         if self._save == True:
             with open("model-" + self._name + ".pickle", "wb") as f:

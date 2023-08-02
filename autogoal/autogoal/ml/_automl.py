@@ -69,7 +69,7 @@ class AutoML:
         self.search_kwargs = search_kwargs
         self._unpickled = False
         self.export_path = None
-
+        
         # If objectives were not specified as iterables then create the correct objectives object
         if not type(self.objectives) is type(tuple) and not type(
             self.objectives

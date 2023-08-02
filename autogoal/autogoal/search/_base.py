@@ -449,7 +449,7 @@ class ProgressLogger(Logger):
         self.pop_counter.update()
         self.total_counter.update()
 
-    def start_generation(self, generations, best_fn):
+    def start_generation(self, generations, best_fn,):
         self.pop_counter.count = 0
 
     def update_best(self, new_best, new_fn, *args):

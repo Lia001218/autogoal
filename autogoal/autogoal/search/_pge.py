@@ -20,7 +20,7 @@ class PESearch(SearchAlgorithm):
         epsilon_greed: float = 0.1,
         random_state: Optional[int] = None,
         name: str = None,
-        save: bool = False,
+        save: bool = True,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -63,9 +63,9 @@ class PESearch(SearchAlgorithm):
         # Update the probabilistic model with the marginal model from the best pipelines
         self._model = update_model(self._model, updates, self._learning_factor)
         
-        json_model = json.dumps(self._model)
-        with open ('probabilistic_model.json', 'w') as model:
-            model.write(json_model)
+        # json_model = json.dumps(self._model)
+        # with open ('probabilistic_model.json', 'w') as model:
+        #     model.write(json_model)
         # save an internal state of metaheuristic for other executions
         if self._save == True:
             with open("model-" + self._name + ".pickle", "wb") as f:

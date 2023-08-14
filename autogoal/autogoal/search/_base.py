@@ -9,7 +9,8 @@ import termcolor
 import json
 
 import autogoal.logging
-
+from odmantic import SyncEngine
+from autogoal.database.pipeline_model import PipelineModel
 from autogoal.utils import RestrictedWorkerByJoin, Min, Gb, Sec
 from autogoal.sampling import ReplaySampler
 from rich.progress import Progress
@@ -122,7 +123,7 @@ class SearchAlgorithm:
                 fns = []
 
                 improvement = False
-
+                db = SyncEngine(database= 'Metalearning')  
                 for _ in range(self._pop_size):
                     solution = None
 
@@ -140,10 +141,14 @@ class SearchAlgorithm:
                     try:
                         logger.sample_solution(solution)
                         fn = self._fitness_fn(solution)
+                        current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
+                        db.save(current_papeline)
+
                     except Exception as e:
                         fn = self._worst_fns
                         logger.error(e, solution)
-
+                        current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
+                        db.save(current_papeline)
                         if self._errors == "raise":
                             logger.end(best_solutions, best_fns)
                             raise e from None

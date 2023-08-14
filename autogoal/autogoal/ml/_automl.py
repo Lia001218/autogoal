@@ -9,6 +9,8 @@ import dill as pickle
 import zipfile
 
 import numpy as np
+from odmantic import SyncEngine
+from autogoal.database.metafeature_model import MetafeatureModel
 
 from autogoal.kb import Pipeline, SemanticType, build_pipeline_graph
 from autogoal.ml.metrics import (
@@ -36,6 +38,7 @@ class AutoML:
 
     def __init__(
         self,
+        name,
         input=None,
         output=None,
         random_state=None,
@@ -52,6 +55,7 @@ class AutoML:
         remote_sources: List[Tuple[str, int] or str] = None,
         **search_kwargs,
     ):
+        self.name = name
         self.input = input
         self.output = output
         self.search_algorithm = search_algorithm or PESearch
@@ -78,7 +82,11 @@ class AutoML:
 
         if random_state:
             np.random.seed(random_state)
-
+        db = SyncEngine(database= 'Metalearning')
+        if self.input and self.output:
+            current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.score_metric),
+                                               input_type= repr(self.input),output_type= repr(self.output))
+            db.save(current_example)
     def _check_fitted(self):
         if not hasattr(self, "best_pipelines_"):
             raise TypeError(

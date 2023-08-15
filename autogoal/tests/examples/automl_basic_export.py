@@ -29,6 +29,7 @@ X_train, y_train, X_test, y_test = dorothea.load()
 # print(automl.predict_all(X_test))
 # Instantiate AutoML and define input/output types
 automl = AutoML(
+    name= 'dorothea',
     input=(MatrixContinuousSparse, Supervised[VectorCategorical]),
     output=VectorCategorical,
     # remote_sources=["remote-sklearn"],

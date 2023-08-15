@@ -83,7 +83,7 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None):
+    def run(self, generations=None, logger=None, metafeature_instance = None):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -123,7 +123,7 @@ class SearchAlgorithm:
                 fns = []
 
                 improvement = False
-                db = SyncEngine(database= 'Metalearning')  
+                db = SyncEngine(database= 'Metalearning')
                 for _ in range(self._pop_size):
                     solution = None
 
@@ -142,13 +142,16 @@ class SearchAlgorithm:
                         logger.sample_solution(solution)
                         fn = self._fitness_fn(solution)
                         current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
-                        db.save(current_papeline)
+                        metafeature_instance.pipelines.append(current_papeline)
+                        db.save(metafeature_instance)
+                        
 
                     except Exception as e:
                         fn = self._worst_fns
                         logger.error(e, solution)
                         current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
-                        db.save(current_papeline)
+                        metafeature_instance.pipelines.append(current_papeline)
+                        db.save(metafeature_instance)
                         if self._errors == "raise":
                             logger.end(best_solutions, best_fns)
                             raise e from None

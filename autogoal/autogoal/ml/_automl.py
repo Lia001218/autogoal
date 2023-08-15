@@ -83,10 +83,11 @@ class AutoML:
         if random_state:
             np.random.seed(random_state)
         db = SyncEngine(database= 'Metalearning')
+        self.current_example: MetafeatureModel 
         if self.input and self.output:
-            current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.score_metric),
-                                               input_type= repr(self.input),output_type= repr(self.output))
-            db.save(current_example)
+            self.current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.objectives),
+                                               input_type= repr(self.input),output_type= repr(self.output),pipelines=[])
+            db.save(self.current_example)
     def _check_fitted(self):
         if not hasattr(self, "best_pipelines_"):
             raise TypeError(
@@ -136,7 +137,8 @@ class AutoML:
         )
 
         self.best_pipelines_, self.best_scores_ = search.run(
-            self.search_iterations, **kwargs
+            self.search_iterations,metafeature_instance=self.current_example
+            , **kwargs
         )
 
         self.fit_pipeline(X, y)

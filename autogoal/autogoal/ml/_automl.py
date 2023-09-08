@@ -114,6 +114,7 @@ class AutoML:
                     include=self.include_filter,
                     exclude=self.exclude_filter,
                 )
+
                 registry += remote_registry
 
         return build_pipeline_graph(

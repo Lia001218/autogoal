@@ -10,6 +10,7 @@ X, y = cars.load()
 
 # Instantiate AutoML and define input/output types
 automl = AutoML(
+    name='l',
     input=(MatrixContinuousDense, Supervised[VectorCategorical]),
     output=VectorCategorical,
 )

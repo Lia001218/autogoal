@@ -37,29 +37,37 @@ RUN adduser --gecos '' --disabled-password coder && \
   echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd
 
 # ==========================================
+# Poetry related config
+# ------------------------------------------
+ARG PIPX_VERSION=1.2.0 POETRY_VERSION=1.2
+ENV PATH=/opt/pipx/bin:/app/.venv/bin:$PATH PIPX_BIN_DIR=/opt/pipx/bin PIPX_HOME=/opt/pipx/home POETRY_VIRTUALENVS_IN_PROJECT=true
+
+# ==========================================
 # Project-specific installation instruction
 # ------------------------------------------
 
 COPY bash.bashrc /etc
 RUN chmod +x /etc/bash.bashrc
 ENV BUILD_ENVIRONMENT="development"
-ENV XDG_CACHE_HOME="/opt/dev/cache"
+
+RUN python3 -m pip install --no-cache-dir --upgrade --user "pipx==$PIPX_VERSION" \
+  && python3 -m pipx ensurepath \
+  && python3 -m pipx completions \
+  && python3 -m pipx install "poetry==$POETRY_VERSION" \
+  && poetry config installer.max-workers 10
+
 WORKDIR /home/coder/autogoal
 
 # Make RUN commands use the autogoal environment
 COPY makefile /home/coder/autogoal/
 
-# Setup poetry configuration
-RUN pip install -U pip setuptools
-RUN pip install poetry==1.2
-RUN poetry config virtualenvs.create false
-
 SHELL ["/bin/bash", "-c"]
-USER coder
-RUN sudo mkdir -p /home/coder/autogoal/data && sudo chown coder:coder /home/coder/autogoal
+# USER coder
+# && sudo chown coder:coder /home/coder/autogoal
+RUN sudo mkdir -p /home/coder/autogoal/data 
 VOLUME /home/coder/autogoal
 RUN sudo rm -rf /home/coder/autogoal/storage
-RUN sudo chown -R coder /home/coder
+# RUN sudo chown -R coder /home/coder
 
 # Copy code-base for autogoal-core
 COPY ../autogoal /home/coder/autogoal/autogoal
@@ -72,6 +80,6 @@ COPY ../autogoal-remote /home/coder/autogoal/autogoal-remote
 
 # Install autogoal core
 COPY dockerfiles/install-package.sh install-package.sh 
-RUN sudo ./install-package.sh core
+RUN ./install-package.sh core
 
 CMD ["/bin/bash"]

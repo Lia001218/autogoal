@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 import dill as pickle
 import zipfile
-
+from autogoal.metalearning.metafeatures import MetafeatureExtractor,TabularMetafeatureExtractor,ImageMetafeatureExtractor, TextMetafeatureExtractor
 import numpy as np
 from odmantic import SyncEngine
 from autogoal.database.metafeature_model import MetafeatureModel
@@ -39,6 +39,7 @@ class AutoML:
     def __init__(
         self,
         name,
+        dataset_type: MetafeatureExtractor,
         input=None,
         output=None,
         random_state=None,
@@ -73,6 +74,7 @@ class AutoML:
         self.search_kwargs = search_kwargs
         self._unpickled = False
         self.export_path = None
+        self.dataset_type = dataset_type
         
         # If objectives were not specified as iterables then create the correct objectives object
         if not type(self.objectives) is type(tuple) and not type(
@@ -82,12 +84,7 @@ class AutoML:
 
         if random_state:
             np.random.seed(random_state)
-        db = SyncEngine(database= 'Metalearning')
-        self.current_example: MetafeatureModel 
-        if self.input and self.output:
-            self.current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.objectives),
-                                               input_type= repr(self.input),output_type= repr(self.output),pipelines=[])
-            db.save(self.current_example)
+       
     def _check_fitted(self):
         if not hasattr(self, "best_pipelines_"):
             raise TypeError(
@@ -122,8 +119,19 @@ class AutoML:
             output_type=self.output,
             registry=registry,
         )
+    
+    def build_metafeature_model(self,X,y):
+        features = self.dataset_type.extract_features(X, y)
+        db = SyncEngine(database= 'Metalearning')
+        self.current_example: MetafeatureModel 
+        if self.input and self.output:
+            self.current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.objectives),
+                                               input_type= repr(self.input),output_type= repr(self.output),
+                                               metacaracteristic_model= features,pipelines=[])
+            db.save(self.current_example)
 
     def fit(self, X, y=None, **kwargs):
+        self.build_metafeature_model(X,y)
         self.input = self._input_type(X)
 
         if not y is None:
@@ -145,6 +153,7 @@ class AutoML:
         self.fit_pipeline(X, y)
 
     def fit_pipeline(self, X, y):
+       
         self._check_fitted()
 
         for pipeline in self.best_pipelines_:

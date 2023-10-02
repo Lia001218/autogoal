@@ -1,18 +1,21 @@
 {
-  "name": "Autogoal Metalearning Dev Env",
-  "image": "autogoal/autogoal:full_image",
-  "features": {
-      "ghcr.io/devcontainers-contrib/features/mongosh-homebrew:1": {}
-  },
-  "customizations": {
-    // Configure properties specific to VS Code.
-    "vscode": {
+    "name": "Autogoal Metalearning Dev Env",
+    "image": "autogoal:full_image",
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/mongosh-homebrew:1": {}
+    },
+    "customizations": {
+        // Configure properties specific to VS Code.
+        "vscode": {
           // Add the IDs of extensions you want installed when the container is created.
-      "extensions": [
-            
-      ]
-    }
-  },
+          "extensions": [
+            "ms-python.python",
+            "ms-toolsai.jupyter",
+            "eamodio.gitlens",
+			"bungcip.better-toml"
+          ]
+        }
+    },
     // Add the IDs of extensions you want installed when the container is created.
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
@@ -23,5 +26,5 @@
 	// Uncomment the next line to run commands after the container is created - for example installing curl.
 	// "postCreateCommand": "apt-get update && apt-get install -y curl",
 	// Uncomment to connect as a non-root user. See https://aka.ms/vscode-remote/containers/non-root.
-  "remoteUser": "coder"
-}
+    "remoteUser": "coder"
+  }

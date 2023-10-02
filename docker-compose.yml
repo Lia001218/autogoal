@@ -7,11 +7,14 @@ services:
     ports:
       - 27017:27017
     volumes:
-      - ./data:/data/db
+      - ./data_for_metalearning:/data/db
   autogoal:
-    image: autogoal/autogoal:full_image  
+    image: autogoal/autogoal:full_image 
+    container_name: autogoal 
     ports:
       - 5000:5000
     depends_on:
       - mongodb
     network_mode: "host"
+    volumes:
+      - ./:/home/coder/autogoal

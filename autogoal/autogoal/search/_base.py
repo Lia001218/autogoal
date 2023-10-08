@@ -16,7 +16,7 @@ from autogoal.sampling import ReplaySampler
 from rich.progress import Progress
 from rich.panel import Panel
 
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from autogoal.search.utils import dominates, non_dominated_sort
 
 
@@ -83,7 +83,7 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None, metafeature_instance = None):
+    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -141,6 +141,7 @@ class SearchAlgorithm:
                     try:
                         logger.sample_solution(solution)
                         fn = self._fitness_fn(solution)
+                        
                         current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
                         metafeature_instance.pipelines.append(current_papeline)
                         db.save(metafeature_instance)

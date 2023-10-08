@@ -5,8 +5,10 @@ from autogoal.ml import AutoML
 from autogoal.utils import Min, Gb, Hour, Sec
 from autogoal.search import PESearch, JsonLogger, ConsoleLogger
 from autogoal.kb import *
-
+from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
 from autogoal.search._base import ConsoleLogger
+
+
 
 # Load dataset
 X_train, y_train, X_test, y_test = dorothea.load()
@@ -18,16 +20,18 @@ for i in range(3):
 
     automl = AutoML(
         # Declare the input and output types
+        name= 'dorothea',
+        dataset_type= TabularMetafeatureExtractor(),
         input=(MatrixContinuousSparse, Supervised[VectorCategorical]),
         output=VectorCategorical,
 
         # Search space configuration
-        search_timeout=1*Hour,
+        search_timeout=5*Min,
         evaluation_timeout= 30 * Sec,
         memory_limit=4*Gb,
         validation_split=0.3,
         cross_validation_steps=2,
-        remote_sources=[("172.19.0.3", 8000, "remote-sklearn")],
+        # remote_sources=[("172.19.0.3", 8000, "remote-sklearn")],
     )
 
     # Run the pipeline search process

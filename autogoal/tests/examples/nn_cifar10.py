@@ -14,10 +14,11 @@ from autogoal.search import (
     RichLogger,
     PESearch,
 )
+
 from autogoal.kb import *
 
-from autogoal.contrib import find_classes
-
+from autogoal_contrib import find_classes
+from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
 # ## Experimentation
 
 # Instantiate the classifier.
@@ -25,7 +26,9 @@ from autogoal.contrib import find_classes
 # i.e., entity recognition.
 
 classifier = AutoML(
-    search_algorithm=PESearch,
+    name= ' cifar10',
+    dataset_type= ImageMetafeatureExtractor(),
+    search_algorithm= PESearch,
     input=(Tensor4, Supervised[VectorCategorical]),
     output=VectorCategorical,
     cross_validation_steps=1,

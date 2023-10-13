@@ -49,8 +49,9 @@ from autogoal.search import (
     RichLogger,
 )
 from autogoal.kb import Seq, Sentence, VectorCategorical, Supervised
-from autogoal.contrib import find_classes
+from autogoal_contrib import find_classes
 from sklearn.metrics import f1_score
+from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
 
 # Next, we parse the command line arguments to configure the experiment.
 
@@ -89,6 +90,8 @@ for cls in find_classes():
 # i.e., text classification.
 
 classifier = AutoML(
+    name= 'jajaja',
+    dataset_type= TextMetafeatureExtractor(),
     search_algorithm=PESearch,
     input=(Seq[Sentence], Supervised[VectorCategorical]),
     output=VectorCategorical,
@@ -103,15 +106,15 @@ classifier = AutoML(
 
 loggers = [RichLogger()]
 
-if args.token:
-    from autogoal.contrib.telegram import TelegramLogger
+# if args.token:
+#     from autogoal.contrib.telegram import TelegramLogger
 
-    telegram = TelegramLogger(
-        token=args.token,
-        name=f"HAHA",
-        channel=args.channel,
-    )
-    loggers.append(telegram)
+#     telegram = TelegramLogger(
+#         token=args.token,
+#         name=f"HAHA",
+#         channel=args.channel,
+#     )
+#     loggers.append(telegram)
 
 # Finally, loading the HAHA dataset, running the `AutoML` instance,
 # and printing the results.

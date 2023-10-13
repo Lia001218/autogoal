@@ -37,7 +37,7 @@ clean:
 # docker-base  Builds the development base image from scratch.
 .PHONY: docker
 docker:
-	docker build . -t autogoal/autogoal:core -f dockerfiles/core/dockerfile
+	docker build . -t autogoal/autogoal:core -f dockerfiles/core/dockerfile --no-cache
 
 # docker-contrib Builds the development image with target contrib from scratch. 
 .PHONY: docker-contrib
@@ -99,6 +99,11 @@ dev-sklearn:
 .PHONY: dev-nltk
 dev-nltk:
 	make dev SERVICE=autogoal-nltk
+
+# dev-full     Run the development image with all contribs installed.
+.PHONY: dev-full
+dev-full:
+	make dev SERVICE=autogoal-full
 
 # mkdocs       Run the docs server in the development image.
 .PHONY: mkdocs
@@ -189,13 +194,17 @@ host-ns: ensure-dev
 # test-core    Run the core unit tests (not contrib).
 .PHONY: test-core
 test-core: ensure-dev
-	python -m pytest autogoal tests/core --doctest-modules -m "not slow" --ignore=autogoal/contrib --ignore=autogoal/datasets --ignore=autogoal/experimental -v
+	pytest autogoal/tests/core
 
 # test-contrib Run the contrib unit tests.
 .PHONY: test-contrib
 test-contrib: ensure-dev
-	python -m pytest autogoal tests/contrib/$(CONTRIB) --doctest-modules -m "not slow" --ignore=autogoal/contrib --ignore=autogoal/datasets --ignore=autogoal/experimental -v
+	bash run_all_contrib_tests.sh
 
+# test-specific-contrib Run any specific contrib unit tests.
+test-specific-contrib:
+	bash run_specific_contrib_tests.sh $(CONTRIB)
+	
 # test-sklearn Run the sklearn contrib unit tests.
 .PHONY: test-sklearn
 test-sklearn: 
@@ -208,7 +217,7 @@ test-nltk:
 
 # test-full    Run all unit tests including the (very) slow ones.
 .PHONY: test-full
-test-full: ensure-dev
+test-full: ensure-dev test-contrib
 	python -m pytest autogoal tests/core tests/contrib --ignore=autogoal/datasets --ignore=autogoal/experimental -v
 
 # cov          Run the coverage analysis.

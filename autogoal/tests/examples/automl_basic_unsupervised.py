@@ -1,7 +1,7 @@
 # AutoGOAL Example: basic usage of the AutoML class
 from autogoal.datasets import cars, dorothea
-from autogoal.kb import MatrixContinuousSparse, Supervised, VectorCategorical
-from autogoal.ml import AutoML, calinski_harabasz_score, silhouette_score, accuracy
+from autogoal.kb import MatrixContinuousSparse, VectorDiscrete
+from autogoal.ml import AutoML, calinski_harabasz_score
 from autogoal.utils import Min, Gb, Hour, Sec
 from autogoal.search import PESearch, JsonLogger, ConsoleLogger
 from autogoal_sklearn import AffinityPropagation, Birch, KMeans

@@ -3,7 +3,7 @@
 from autogoal.datasets import dorothea
 from autogoal.ml import AutoML
 from autogoal.utils import Min, Gb, Hour, Sec
-from autogoal.search import PESearch, JsonLogger, ConsoleLogger
+from autogoal.search import ConsoleLogger, RichLogger
 from autogoal.kb import *
 from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
 from autogoal.search._base import ConsoleLogger
@@ -71,3 +71,5 @@ automl.fit(X_train, y_train)
 
 # automl.export_portable(generate_zip=True)
 
+# Export the result of the search process onto a brand new image called "AutoGOAL-Cars"
+automl.export_portable(generate_zip=True)

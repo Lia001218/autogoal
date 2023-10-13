@@ -122,6 +122,7 @@ class AutoML:
     
     def build_metafeature_model(self,X,y):
         features = self.dataset_type.extract_features(X, y)
+        print(features,' a ver mi alma')
         db = SyncEngine(database= 'Metalearning')
         self.current_example: MetafeatureModel 
         if self.input and self.output:

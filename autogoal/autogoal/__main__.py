@@ -236,7 +236,7 @@ def automl_fit(
     console.print(f"🏃 Training on {len(dataset)} items.")
     automl.fit(X, y, logger=RichLogger())
 
-    automl.folder_save(output)
+    # automl.folder_save(output)
 
     console.print(f"💾 Saving model to [green]{output.absolute()}/storage [/].")
 

@@ -5,8 +5,9 @@ from scipy.sparse import csr_matrix
 from distfit import distfit
 from lexical_diversity import lex_div as ld
 from nltk.corpus import stopwords
-
-
+import cv2
+import matplotlib.colors
+from ultralytics import YOLO
 class MetafeatureExtractor:
     def __init__(self):
         self.features = []
@@ -164,7 +165,69 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         self.__output_cardinality__(y)
         self.__average_size__(X)
         self.__type_image__(X)
+        self.__rgb_value__(X)
+        self.__predominate_warm_or_cool_colors__(X)
+
         return self.features
+    
+    def __average_intensity__(self,X):
+        if len(X.shape) == 3:
+            intensity = []
+            for x in X:
+                grayscale = np.dot(x[2])
+                intensity.append(grayscale.mean())
+            intensity = np.array(intensity)
+            self.features.append(intensity.mean())
+            self.features.append(intensity.min())
+            self.features.append(intensity.max())
+            self.features.append(intensity.std())
+        else:
+            self.features.append(-1)
+            self.features.append(-1)
+            self.features.append(-1)
+            self.features.append(-1)
+
+
+    def __analysis_object__(self,X):
+        model = YOLO('/yolo/yolov5x6.pt')
+        count_object = [len(model(x)) for x in X]
+        count_object = np.array(count_object)
+        self.features.append(count_object.mean())
+        self.features.append(count_object.min())
+        self.features.append(count_object.max())
+        self.features.append(count_object.std())  
+
+          
+    def __predominate_warm_or_cool_colors__(self,X):
+        if len(X.shape) == 3:
+            rgb_matrix = np.array([x[2] for x in X])
+            hsv_matrix = [matplotlib.colors.rgb_to_hsv(rgb) for rgb in rgb_matrix]
+            predominat_hue = []
+            for hsv in hsv_matrix:
+
+                hue_histogram = cv2.calcHist([hsv], [0], None, [256], [0, 256])
+                predominat_hue.append(np.argmax(hue_histogram))
+            predominat_hue = np.array(predominat_hue)
+            self.features.append(predominat_hue.mean())
+            self.features.append(predominat_hue.min())
+            self.features.append(predominat_hue.max())
+            self.features.append(predominat_hue.std())
+        else:
+            self.features.append(-1)
+            self.features.append(-1)
+            self.features.append(-1)
+            self.features.append(-1)
+
+    def __rgb_value__(self,X):
+        rgb = []
+        for x in X:
+            rgb.append(x[2])
+        rgb = np.array(rgb)
+        self.features.append(rgb.mean())
+        self.features.append(rgb.min())
+        self.features.append(rgb.max())
+        self.features.append(rgb.std())
+
 
     def __type_image__(self,X):
         twoD = False

@@ -1,4 +1,4 @@
-from scipy.stats import skew, kurtosis
+from scipy.stats import skew, kurtosis, mode
 import numpy as np
 from scipy import stats
 from scipy.sparse import csr_matrix
@@ -6,8 +6,11 @@ from distfit import distfit
 from lexical_diversity import lex_div as ld
 from nltk.corpus import stopwords
 import cv2
+import matplotlib.pyplot as plt
 import matplotlib.colors
 from ultralytics import YOLO
+
+
 class MetafeatureExtractor:
     def __init__(self):
         self.features = []
@@ -36,29 +39,27 @@ class TabularMetafeatureExtractor(MetafeatureExtractor):
         self.features.append(len(missing_values))
         self.features.append(np.std(X))
         self.features.append(X.std()/X.shape[1])
-     
+
         skewness = np.array([skew(row) for row in X.T])
+
+        skewness = np.nan_to_num(skewness,nan= -1)
         self.features.append(skewness.min())
         self.features.append(skewness.max())
         self.features.append(skewness.std())
         self.features.append(skewness.mean())
 
         kurtosis_val = np.array([kurtosis(row) for row in X.T])
-        
+        kurtosis_val = np.nan_to_num(kurtosis_val,nan= -1)
         self.features.append(kurtosis_val.min())
         self.features.append(kurtosis_val.max())
         self.features.append(kurtosis_val.std())
         self.features.append(kurtosis_val.mean())
-  
         standardization_factor = self.__normalized_class_entropy__(X,y)
         attr_entropy = self.__normalized_attr_entropy__(X)
-
         self.__joint_entropy__(X,y)
-
         cummon_info = self.__mutual_information__(X,y,standardization_factor)
         self.__equivalent_number_of_attr__(standardization_factor,cummon_info)
         self.__noise_signal_ratio__(cummon_info,attr_entropy)
-        print('finish')
         return self.features
 
     def __issupervised__(self,y):
@@ -167,8 +168,8 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         self.__type_image__(X)
         self.__rgb_value__(X)
         self.__predominate_warm_or_cool_colors__(X)
-
-        return self.features
+        self.__analysis_object__(X)
+        return [float(i) for i in self.features]
     
     def __average_intensity__(self,X):
         if len(X.shape) == 3:
@@ -199,15 +200,11 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
 
           
     def __predominate_warm_or_cool_colors__(self,X):
-        if len(X.shape) == 3:
-            rgb_matrix = np.array([x[2] for x in X])
+        
+        rgb_matrix = np.array([x[2] for x in X if x.shape[2] == 3])
+        if len(rgb_matrix) > 0:
             hsv_matrix = [matplotlib.colors.rgb_to_hsv(rgb) for rgb in rgb_matrix]
-            predominat_hue = []
-            for hsv in hsv_matrix:
-
-                hue_histogram = cv2.calcHist([hsv], [0], None, [256], [0, 256])
-                predominat_hue.append(np.argmax(hue_histogram))
-            predominat_hue = np.array(predominat_hue)
+            predominat_hue = np.array([mode(x)[0] for x in hsv_matrix])
             self.features.append(predominat_hue.mean())
             self.features.append(predominat_hue.min())
             self.features.append(predominat_hue.max())
@@ -229,13 +226,14 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         self.features.append(rgb.std())
 
 
+
     def __type_image__(self,X):
         twoD = False
         threeD = False
         for x in X : 
-            if len(x) == 2:
+            if len(x.shape) == 2:
                 twoD = True
-            elif len(x) == 3:
+            elif len(x.shape) == 3:
                 threeD = True
             if twoD and threeD:
                 self.features.append(2)

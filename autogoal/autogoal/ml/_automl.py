@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Tuple
 import dill as pickle
 import zipfile
-from autogoal.metalearning.metafeatures import MetafeatureExtractor,TabularMetafeatureExtractor,ImageMetafeatureExtractor, TextMetafeatureExtractor
+from autogoal.metalearning.metafeatures import MetafeatureExtractor
 import numpy as np
 from odmantic import SyncEngine
 from autogoal.database.metafeature_model import MetafeatureModel
@@ -129,6 +129,7 @@ class AutoML:
             self.current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.objectives),
                                                input_type= repr(self.input),output_type= repr(self.output),
                                                metacaracteristic_model= features,pipelines=[])
+          
             db.save(self.current_example)
 
     def fit(self, X, y=None, **kwargs):

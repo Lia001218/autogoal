@@ -5,7 +5,7 @@ from autogoal.ml import AutoML
 from autogoal.utils import Min, Gb, Hour, Sec
 from autogoal.search import ConsoleLogger, RichLogger
 from autogoal.kb import *
-from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
+from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 from autogoal.search._base import ConsoleLogger
 
 

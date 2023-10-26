@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Tuple
 import dill as pickle
 import zipfile
-from autogoal.metalearning.metafeatures import MetafeatureExtractor
+from autogoal.metalearning.metafeatures_extractor import MetafeatureExtractor
 import numpy as np
 from odmantic import SyncEngine
 from autogoal.database.metafeature_model import MetafeatureModel

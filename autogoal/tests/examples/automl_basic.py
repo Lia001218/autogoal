@@ -1,5 +1,5 @@
 # AutoGOAL Example: basic usage of the AutoML class
-from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,ImageMetafeatureExtractor, TextMetafeatureExtractor
+from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,ImageMetafeatureExtractor, TextMetafeatureExtractor
 from autogoal.datasets import cars
 from autogoal.kb import MatrixContinuousDense, Supervised, VectorCategorical
 from autogoal.ml import AutoML

@@ -18,7 +18,7 @@ from autogoal.search import (
 from autogoal.kb import *
 
 from autogoal_contrib import find_classes
-from autogoal.metalearning.metafeatures import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
+from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
 # ## Experimentation
 
 # Instantiate the classifier.

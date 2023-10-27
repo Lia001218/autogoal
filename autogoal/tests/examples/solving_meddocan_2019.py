@@ -47,7 +47,8 @@ from autogoal.search import (
     PESearch,
 )
 from autogoal.kb import *
-
+from autogoal_contrib import find_classes
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 # ## Parsing arguments
 
 # Next, we parse the command line arguments to configure the experiment.
@@ -80,6 +81,7 @@ print(args)
 from autogoal.contrib import find_classes
 
 classifier = AutoML(
+    dataset_type=TextMetafeatureExtractor(),
     search_algorithm=PESearch,
     input=(Seq[Seq[Word]], Supervised[Seq[Seq[Label]]]),
     output=Seq[Seq[Label]],

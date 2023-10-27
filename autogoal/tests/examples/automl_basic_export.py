@@ -17,7 +17,7 @@ X_train, y_train, X_test, y_test = dorothea.load()
 
 automl = AutoML(
     # Declare the input and output types
-    name= 'dorothea',
+    
     dataset_type= TabularMetafeatureExtractor(),
     input=(MatrixContinuousSparse, Supervised[VectorCategorical]),
     output=VectorCategorical,

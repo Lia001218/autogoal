@@ -7,11 +7,10 @@ from autogoal.search import (
 from autogoal.kb import Seq, Sentence, VectorCategorical, Supervised
 from autogoal_contrib import find_classes
 from sklearn.metrics import f1_score
-from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 from sklearn.model_selection import train_test_split
 
 test = AutoML(
-    name= 'movie_review',
     dataset_type= TextMetafeatureExtractor(),
     input=(Seq[Sentence], Supervised[VectorCategorical]),
     output=VectorCategorical

@@ -18,7 +18,7 @@ from autogoal.search import (
 from autogoal.kb import *
 
 from autogoal_contrib import find_classes
-from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
+from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
 # ## Experimentation
 
 # Instantiate the classifier.
@@ -26,7 +26,6 @@ from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtra
 # i.e., entity recognition.
 
 classifier = AutoML(
-    name= ' cifar10',
     dataset_type= ImageMetafeatureExtractor(),
     search_algorithm= PESearch,
     input=(Tensor4, Supervised[VectorCategorical]),

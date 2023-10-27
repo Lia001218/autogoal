@@ -18,8 +18,8 @@ from autogoal.search import (
 )
 from autogoal.kb import *
 
-from autogoal.contrib import find_classes
-
+from autogoal_contrib import find_classes
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 # ## Experimentation
 
 # Instantiate the classifier.
@@ -27,6 +27,7 @@ from autogoal.contrib import find_classes
 # i.e., entity recognition.
 
 classifier = AutoML(
+    dataset_type= TextMetafeatureExtractor(),
     search_algorithm=PESearch,
     input=(Seq[Seq[Word]], Supervised[Seq[Seq[Label]]]),
     output=Seq[Seq[Label]],

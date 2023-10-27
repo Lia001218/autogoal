@@ -1,5 +1,5 @@
 # AutoGOAL Example: basic usage of the AutoML class
-from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,ImageMetafeatureExtractor, TextMetafeatureExtractor
+from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 from autogoal.datasets import cars
 from autogoal.kb import MatrixContinuousDense, Supervised, VectorCategorical
 from autogoal.ml import AutoML
@@ -10,7 +10,6 @@ X, y = cars.load()
 
 # Instantiate AutoML and define input/output types
 automl = AutoML(
-    name='l',
     dataset_type = TabularMetafeatureExtractor(),
     input=(MatrixContinuousDense, Supervised[VectorCategorical]),
     output=VectorCategorical,

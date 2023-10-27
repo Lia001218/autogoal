@@ -7,6 +7,7 @@ from sklearn.metrics.cluster._unsupervised import silhouette_score as s_score
 from autogoal.ml.metrics import unsupervised_fitness_fn_moo
 from sklearn.decomposition import PCA
 import argparse
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 
 # TODO: Fix this example. Unsupervised is not working as intended right now.
 
@@ -46,6 +47,7 @@ for n_features in [2, 20, 100]:
 
                 # # Instantiate AutoML, define input/output types and the score metric
                 automl = AutoML(
+                    dataset_type = TextMetafeatureExtractor(),
                     input=(MatrixContinuousDense, Supervised[VectorCategorical]),
                     output=VectorCategorical,
                     objectives=(silhouette_score),

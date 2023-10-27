@@ -51,7 +51,7 @@ from autogoal.search import (
 from autogoal.kb import Seq, Sentence, VectorCategorical, Supervised
 from autogoal_contrib import find_classes
 from sklearn.metrics import f1_score
-from autogoal.metalearning.metafeatures_extractor import TabularMetafeatureExtractor,TextMetafeatureExtractor,ImageMetafeatureExtractor
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 
 # Next, we parse the command line arguments to configure the experiment.
 
@@ -90,7 +90,6 @@ for cls in find_classes():
 # i.e., text classification.
 
 classifier = AutoML(
-    name= 'jajaja',
     dataset_type= TextMetafeatureExtractor(),
     search_algorithm=PESearch,
     input=(Seq[Sentence], Supervised[VectorCategorical]),

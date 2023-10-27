@@ -16,7 +16,8 @@ from autogoal.kb import *
 
 # To restrict which types of algorithms can `AutoML` use, we will manually invoke `find_classes`.
 
-from autogoal.contrib import find_classes
+from autogoal_contrib import find_classes
+from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 
 # ## Experimentation
 
@@ -25,6 +26,7 @@ from autogoal.contrib import find_classes
 # i.e., supervised classification from matrix-like features.
 
 classifier = AutoML(
+    dataset_type= TabularMetafeatureExtractor(),
     input=(MatrixContinuousDense, Supervised[VectorCategorical]),
     output=VectorCategorical,
     # We will set `cross_validation_steps=1` to reduce the time that we spend on each pipeline.

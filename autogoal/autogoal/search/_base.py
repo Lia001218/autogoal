@@ -140,6 +140,7 @@ class SearchAlgorithm:
 
                     try:
                         logger.sample_solution(solution)
+                        #TODO llamar a meta_model.predict aki
                         fn = self._fitness_fn(solution)
                         
                         current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)

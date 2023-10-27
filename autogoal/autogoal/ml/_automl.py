@@ -36,7 +36,6 @@ class AutoML:
 
     def __init__(
         self,
-        name,
         dataset_type: MetafeatureExtractor,
         input=None,
         output=None,
@@ -54,7 +53,7 @@ class AutoML:
         remote_sources: List[Tuple[str, int] or str] = None,
         **search_kwargs,
     ):
-        self.name = name
+  
         self.input = input
         self.output = output
         self.search_algorithm = search_algorithm or PESearch
@@ -126,9 +125,10 @@ class AutoML:
         db = SyncEngine(database= 'Metalearning')
         self.current_example: MetafeatureModel 
         if self.input and self.output:
-            self.current_example = MetafeatureModel(dataset_name= self.name,metric= repr(self.objectives),
+            self.current_example = MetafeatureModel(metric= repr(self.objectives),
                                                input_type= repr(self.input),output_type= repr(self.output),
-                                               metacaracteristic_model= features,pipelines=[])
+                                               metacaracteristic_model= features,pipelines=[],dataset_type= 
+                                               type(self.dataset_type).__name__)
           
             db.save(self.current_example)
 
@@ -291,6 +291,7 @@ class AutoML:
         scores = []
         if solution_index is None:
             for pipeline in self.best_pipelines_:
+                
                 y_pred = pipeline.run(X, np.zeros_like(y) if y else None)
                 scores.append(
                     tuple([objective(y or X, y_pred) for objective in self.objectives])

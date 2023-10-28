@@ -23,10 +23,19 @@ RUN apt update \
     python3-dev \
     ffmpeg \
     libsm6 \
-    libxext6
+    libxext6 \
+    apt-transport-https \
+    gnupg \
+    rsync
 # =====================
 # User stuff
 # ---------------------
+
+
+# RUN curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor >bazel-archive-keyring.gpg
+# RUN sudo mv bazel-archive-keyring.gpg /usr/share/keyrings
+# # echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+# RUN sudo apt install bazel
 
 # https://wiki.debian.org/Locale#Manually
 RUN sed -i "s/# en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen \
@@ -36,6 +45,7 @@ RUN chsh -s /bin/bash
 ENV SHELL=/bin/bash
 RUN adduser --gecos '' --disabled-password coder && \
   echo "coder ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/nopasswd
+
 
 # ==========================================
 # Poetry related config
@@ -84,6 +94,16 @@ COPY ../scripts /home/coder/autogoal/scripts
 
 # Install autogoal core
 COPY dockerfiles/install-package.sh install-package.sh 
-RUN ./install-package.sh core
+# COPY dockerfiles/generate-tesorflow-addons-wheel.sh /home/generate-tesorflow-addons-wheel.sh 
+
+RUN ./install-package.sh core 
+
+# RUN wget https://github.com/bazelbuild/bazelisk/releases/download/v1.18.0/bazelisk-linux-arm64 \
+#   && chmod +x bazelisk-linux-arm64 \
+#   && sudo mv bazelisk-linux-arm64 /usr/local/bin/bazel \
+#   && chmod +x generate-tesorflow-addons-wheel.sh \
+#   && ./generate-tesorflow-addons-wheel.sh
+ 
+# Install bazel
 
 CMD ["/bin/bash"]

@@ -1,7 +1,6 @@
 from autogoal.metalearning.metafeatures_extractor import MetafeatureExtractor
 import matplotlib.pyplot as plt
 import matplotlib.colors
-from ultralytics import YOLO
 import numpy as np
 from scipy.stats import mode
 
@@ -18,7 +17,8 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         self.__type_image__(X)
         self.__rgb_value__(X)
         self.__predominate_warm_or_cool_colors__(X)
-        self.__analysis_object__(X)
+
+
         return [float(i) for i in self.features]
     
     def __average_intensity__(self,X):
@@ -39,14 +39,23 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
             self.features.append(-1)
 
 
-    def __analysis_object__(self,X):
-        model = YOLO('/yolo/yolov5x6.pt')
-        count_object = [len(model(x)) for x in X]
-        count_object = np.array(count_object)
-        self.features.append(count_object.mean())
-        self.features.append(count_object.min())
-        self.features.append(count_object.max())
-        self.features.append(count_object.std())  
+    # def __analysis_object__(self,X):
+    #     # print(os.listdir())
+    #     # model = YOLO('/home/coder/autogoal/yolo/yolov8n-oiv7.pt')
+    #     # print(len(model(X[0])), 'tyutu')
+    #     model = fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
+    #     model.eval()
+        
+    #     print()
+    #     print(torch.from_numpy(X[0]))
+    #     model_result = model(torch.from_numpy(X))
+    #     count_object = [len([i[0]['boxes']- i[0]['score']]) for i in model_result]
+    #     print('tu que ')
+    #     count_object = np.array(count_object)
+    #     self.features.append(count_object.mean())
+    #     self.features.append(count_object.min())
+    #     self.features.append(count_object.max())
+    #     self.features.append(count_object.std())  
 
           
     def __predominate_warm_or_cool_colors__(self,X):

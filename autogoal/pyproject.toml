@@ -45,6 +45,7 @@ distfit = "^1.6.12"
 lexical-diversity = "^0.1.1"
 ultralytics = "^8.0.200"
 matplotlib = "^3.8.0"
+click = "^8.0"
 
 [build-system]
 requires = ["poetry-core"]

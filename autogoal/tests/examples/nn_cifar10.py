@@ -52,7 +52,7 @@ from autogoal.datasets import cifar10
 X_train, y_train, X_test, y_test = cifar10.load()
 
 
-classifier.fit(X_train, y_train, logger=loggers)
-score = classifier.score(X_test, y_test)
+classifier.fit(X_train, y_train)
+# score = classifier.score(X_test, y_test)
 
-print(score)
+# print(score)

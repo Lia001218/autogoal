@@ -52,7 +52,7 @@ import argparse
 from autogoal.kb import Supervised
 from autogoal.logging import logger
 import json
-
+from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 # From `sklearn` we will use `train_test_split` to build train and validation sets.
 
 from sklearn.model_selection import train_test_split
@@ -152,6 +152,7 @@ for epoch in range(args.epochs):
         # parameters we received from the command line.
 
         classifier = AutoML(
+            dataset_type= TabularMetafeatureExtractor(),
             input=(MatrixContinuousDense, Supervised[VectorCategorical]),
             output=VectorCategorical,
             search_algorithm=PESearch,

@@ -10,4 +10,6 @@ class MetafeatureModel(Model):
     output_type: str
     pipelines : Optional[list[PipelineModel]] = None 
     dataset_type: str
+    memory_limit: Optional[float] = None
+    evaluation_timeout: Optional[float] = None
 

@@ -72,4 +72,4 @@ automl.fit(X_train, y_train)
 # automl.export_portable(generate_zip=True)
 
 # Export the result of the search process onto a brand new image called "AutoGOAL-Cars"
-automl.export_portable(generate_zip=True)
+# automl.export_portable(generate_zip=True)

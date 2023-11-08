@@ -12,11 +12,14 @@ class TextMetafeatureExtractor(MetafeatureExtractor):
 
     def extract_features(self, X, y=None):
         # print(type(X), ' que tu eres mi alma')
-        if isinstance(X, list):
-            X = np.array(X)
+        # if isinstance(X, list):
+        #     print(X[1],'alal')
+        #     # print(y[0:10],'vamos')
+        #     X = np.array(X)
 
         self.__issupervised__(y)
-        cardinality = X.shape[0]
+        # cardinality = X.shape[0]
+        cardinality = len(X)
         self.features.append(cardinality)
         output_cardinality = self.__output_cardinality__(y)
 
@@ -54,20 +57,20 @@ class TextMetafeatureExtractor(MetafeatureExtractor):
         self.features.append(stopwords_proportion.std())
 
     def __lexical_diversity__(self,X):
-        list_lexical_diversity = np.array([ld.ttr(ld.tokenize(x)) for x in X[0]])
+        list_lexical_diversity = np.array([ld.ttr(ld.tokenize(self._concatenate_words(x))) for x in X])
         self.features.append(list_lexical_diversity.mean())
         self.features.append(list_lexical_diversity.min())
         self.features.append(list_lexical_diversity.max())
         self.features.append(list_lexical_diversity.std())
 
     def __len_distribution__(self, X):
-        doc_len = np.array([len(x) for x in X[0]])
+        doc_len = np.array([len(x) for x in X])
         dift = distfit()
         sumary = dift.fit_transform(doc_len)
         self.features.append(sumary['model']['name'])
 
     def __average_len__(self,X):
-        len_doc = np.array([len(x) for x in X[0] ])
+        len_doc = np.array([len(x) for x in X])
         self.features.append(len_doc.mean())
 
     def __output_cardinality__(self,y):
@@ -83,3 +86,6 @@ class TextMetafeatureExtractor(MetafeatureExtractor):
             self.features.append(1)
         else : 
             self.features.append(0)
+
+    def _concatenate_words(self, words: list[str]):
+        return " ".join(words)

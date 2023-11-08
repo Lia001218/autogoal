@@ -1,10 +1,11 @@
 import io
 import os
 import shutil
+import zipfile
 from pathlib import Path
 from typing import List, Tuple
 import dill as pickle
-import zipfile
+from typing import Optional
 from autogoal.metalearning.metafeatures_extractor import MetafeatureExtractor
 import numpy as np
 from odmantic import SyncEngine
@@ -51,6 +52,8 @@ class AutoML:
         registry=None,
         objectives=None,
         remote_sources: List[Tuple[str, int] or str] = None,
+        memory_limit:Optional[float] =None,
+        evaluation_timeout: Optional[float]=None,
         **search_kwargs,
     ):
   
@@ -72,6 +75,8 @@ class AutoML:
         self._unpickled = False
         self.export_path = None
         self.dataset_type = dataset_type
+        self.memory_limit = memory_limit
+        self.evaluation_timeout = evaluation_timeout
         
         # If objectives were not specified as iterables then create the correct objectives object
         if not type(self.objectives) is type(tuple) and not type(
@@ -121,14 +126,14 @@ class AutoML:
     
     def build_metafeature_model(self,X,y):
         features = self.dataset_type.extract_features(X, y)
-        print(features,' a ver mi alma')
+        # print(features,' a ver mi alma')
         db = SyncEngine(database= 'Metalearning')
         self.current_example: MetafeatureModel 
         if self.input and self.output:
             self.current_example = MetafeatureModel(metric= repr(self.objectives),
                                                input_type= repr(self.input),output_type= repr(self.output),
                                                metacaracteristic_model= features,pipelines=[],dataset_type= 
-                                               type(self.dataset_type).__name__)
+                                               type(self.dataset_type).__name__, memory_limit= self.memory_limit, evaluation_timeout= self.evaluation_timeout)
           
             db.save(self.current_example)
 
@@ -292,7 +297,7 @@ class AutoML:
         if solution_index is None:
             for pipeline in self.best_pipelines_:
                 
-                y_pred = pipeline.run(X, np.zeros_like(y) if y else None)
+                y_pred = pipeline.run(X, np.zeros_like(y) if y is not None else None)
                 scores.append(
                     tuple([objective(y or X, y_pred) for objective in self.objectives])
                 )

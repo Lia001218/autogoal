@@ -78,7 +78,7 @@ print(args)
 # Note that the input and output types here are defined to match the problem statement,
 # i.e., entity recognition.
 
-from autogoal.contrib import find_classes
+from autogoal_contrib import find_classes
 
 classifier = AutoML(
     dataset_type=TextMetafeatureExtractor(),

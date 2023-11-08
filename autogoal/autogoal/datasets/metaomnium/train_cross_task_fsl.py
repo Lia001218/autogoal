@@ -35,9 +35,9 @@ from .data_loader_cross_problem_fsl import (
 
 
 class CrossTaskFewShotLearningExperiment:
-    def __init__(self, args, root_dir: str = 'None'):
+    def __init__(self, args, datasets_folder: str, seed: int = 42, root_dir: str = 'None'):
         self.args = args
-
+        self.seed = seed
         # Define paths
         self.curr_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -49,6 +49,11 @@ class CrossTaskFewShotLearningExperiment:
         self.res_dir = os.path.join(self.main_dir, "results")
         self.data_dir = os.path.join(self.main_dir, "data")
         self.logs_path = os.path.join(self.main_dir, "logs")
+        trains_datasets = ''
+        for dataset in os.listdir(self.data_dir):
+            if dataset.startswith('train'):
+                trains_datasets += dataset + ','
+        self.train_datasets = trains_datasets
         # Initialization step
         
         self.set_seed()
@@ -57,9 +62,9 @@ class CrossTaskFewShotLearningExperiment:
 
     
     def set_seed(self):
-        random.seed(self.args.seed)
-        np.random.seed(self.args.seed)
-        torch.manual_seed(self.args.seed)
+        random.seed(self.seed)
+        np.random.seed(self.seed)
+        torch.manual_seed(self.seed)
 
     def configure(self):
         (
@@ -67,7 +72,7 @@ class CrossTaskFewShotLearningExperiment:
             train_dataset_task_type_dict,
             weights,
         ) = create_datasets_task_type(
-            self.args.train_datasets.split(","), self.data_dir
+            self.train_datasets.split(","), self.data_dir
         )
         if "segmentation" in train_datasets:
             self.args.segm_classes = (
@@ -114,52 +119,50 @@ class CrossTaskFewShotLearningExperiment:
                 yield x
 
     def run(self):
-        seeds = [random.randint(0, 100000) for _ in range(self.args.runs)]
-        print(f"Run seeds: {seeds}")
+        # seeds = [random.randint(0, 100000) for _ in range(self.args.runs)]
+        # print(f"Run seeds: {seeds}")
 
-        for run in range(self.args.runs):
-            self.clprint("\n\n" + "-" * 40)
-            self.clprint(f"[*] Starting run {run} with seed {seeds[run]}")
+        # for run in range(self.args.runs):
+        #     self.clprint("\n\n" + "-" * 40)
+        #     self.clprint(f"[*] Starting run {run} with seed {seeds[run]}")
 
-            torch.manual_seed(seeds[run])
-
-            train_generator = iter(self.train_loader.generator(seeds[run]))
-
-            with tqdm.tqdm(total=self.args.train_iters) as pbar_epochs:
-                for i, task in enumerate(train_generator):
-                    ttime = time.time()
-                    n_way = task.n_way
-                    k_shot = task.k_shot
-                    query_size = task.query_size
-                    data = task.data
-                    labels = task.labels
-                    support_size = n_way * k_shot
-                    
-                    # Process the labels according to the task type
-                    if task.task_type == "segmentation":
-                        labels = task.segmentations.squeeze(dim=1)
-                    elif task.task_type.startswith("regression"):
-                        if task.task_type in [
-                            "regression_pose_animals",
-                            "regression_pose_animals_syn",
-                            "regression_mpii",
-                        ]:
-                            labels = get_k_keypoints(
-                                n_way * 5, task.regressions, task.task_type
-                            )
-                        else:
-                            labels = task.regressions
-                    else:
-                        labels = process_labels(
-                            n_way * (k_shot + query_size), n_way
-                        )
-                    train_x, train_y, test_x, test_y = (
-                        data[:support_size],
-                        labels[:support_size],
-                        data[support_size:],
-                        labels[support_size:],
+        torch.manual_seed(self.seed)
+        train_generator = iter(self.train_loader.generator(self.seed))
+        # with tqdm.tqdm(total=self.args.train_iters) as pbar_epochs:
+        for i, task in enumerate(train_generator):
+            ttime = time.time()
+            n_way = task.n_way
+            k_shot = task.k_shot
+            query_size = task.query_size
+            data = task.data
+            labels = task.labels
+            support_size = n_way * k_shot
+            
+            # Process the labels according to the task type
+            if task.task_type == "segmentation":
+                labels = task.segmentations.squeeze(dim=1)
+            elif task.task_type.startswith("regression"):
+                if task.task_type in [
+                    "regression_pose_animals",
+                    "regression_pose_animals_syn",
+                    "regression_mpii",
+                ]:
+                    labels = get_k_keypoints(
+                        n_way * 5, task.regressions, task.task_type
                     )
-                    yield train_x, train_y
+                else:
+                    labels = task.regressions
+            else:
+                labels = process_labels(
+                    n_way * (k_shot + query_size), n_way
+                )
+            train_x, train_y, test_x, test_y = (
+                data[:support_size],
+                labels[:support_size],
+                data[support_size:],
+                labels[support_size:],
+            )
+            yield train_x, train_y
 
 
 

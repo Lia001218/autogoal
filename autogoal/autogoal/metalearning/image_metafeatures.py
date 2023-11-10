@@ -22,10 +22,10 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         return [float(i) for i in self.features]
     
     def __average_intensity__(self,X):
-        if len(X.shape) == 3:
+        if len(X.shape) == 4:
             intensity = []
             for x in X:
-                grayscale = np.dot(x[2])
+                grayscale = np.dot(x[3])
                 intensity.append(grayscale.mean())
             intensity = np.array(intensity)
             self.features.append(intensity.mean())
@@ -90,9 +90,9 @@ class ImageMetafeatureExtractor(MetafeatureExtractor):
         twoD = False
         threeD = False
         for x in X : 
-            if len(x.shape) == 2:
+            if len(x.shape) == 3:
                 twoD = True
-            elif len(x.shape) == 3:
+            elif len(x.shape) == 4:
                 threeD = True
             if twoD and threeD:
                 self.features.append(2)

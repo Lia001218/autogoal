@@ -24,9 +24,9 @@ class TabularMetafeatureExtractor(MetafeatureExtractor):
         numeric_values = len(X.shape) - len(missing_values)
         self.features.append(numeric_values) #number of numeric attrubutes
         self.features.append(len(missing_values))
-        self.features.append(np.std(X))
-        self.features.append(X.std()/X.shape[1])
-
+        self.features.append(np.nanstd(X))
+        self.features.append(np.nanstd(X)/X.shape[1])
+      
         skewness = np.array([skew(row) for row in X.T])
 
         skewness = np.nan_to_num(skewness,nan= -1)
@@ -47,6 +47,7 @@ class TabularMetafeatureExtractor(MetafeatureExtractor):
         cummon_info = self.__mutual_information__(X,y,standardization_factor)
         self.__equivalent_number_of_attr__(standardization_factor,cummon_info)
         self.__noise_signal_ratio__(cummon_info,attr_entropy)
+        self.features = [float(i) for i in self.features]
         return self.features
 
     def __issupervised__(self,y):
@@ -66,6 +67,7 @@ class TabularMetafeatureExtractor(MetafeatureExtractor):
 
     def __attr_i_entropy__(self,x_i):
         _, counts = np.unique(x_i, return_counts=True)
+ 
         return stats.entropy(counts) / np.log2(len(counts))
     
     def __normalized_attr_entropy__(self,X):

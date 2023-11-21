@@ -134,6 +134,7 @@ class AutoML:
                                                input_type= repr(self.input),output_type= repr(self.output),
                                                metacaracteristic_model= features,pipelines=[],dataset_type= 
                                                type(self.dataset_type).__name__, memory_limit= self.memory_limit, evaluation_timeout= self.evaluation_timeout)
+
           
             db.save(self.current_example)
 

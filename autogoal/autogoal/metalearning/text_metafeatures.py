@@ -64,14 +64,20 @@ class TextMetafeatureExtractor(MetafeatureExtractor):
         self.features.append(list_lexical_diversity.std())
 
     def __len_distribution__(self, X):
-        doc_len = np.array([len(x) for x in X])
-        dift = distfit()
-        sumary = dift.fit_transform(doc_len)
-        self.features.append(sumary['model']['name'])
+        try:
+            doc_len = np.array([len(x) for x in X])
+            dift = distfit()
+            sumary = dift.fit_transform(doc_len)
+            self.features.append(sumary['model']['name'])
+        except:
+            self.features.append('None')
 
     def __average_len__(self,X):
-        len_doc = np.array([len(x) for x in X])
-        self.features.append(len_doc.mean())
+        try:
+            len_doc = np.array([len(x) for x in X])
+            self.features.append(len_doc.mean())
+        except :
+            self.features.append(-1)
 
     def __output_cardinality__(self,y):
         if y is None: 

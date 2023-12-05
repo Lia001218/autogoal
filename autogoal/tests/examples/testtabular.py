@@ -3,19 +3,23 @@ import openml
 import numpy as np
 benchmark_suite = openml.study.get_suite(293) # obtain the benchmark suite
 from scipy import sparse as sp
-i = 1
+i = 85
 
 a = []
 tasks = []
+stop = 100
 
-for task_id in benchmark_suite.tasks:  # iterate over all tasks
-    task = openml.tasks.get_task(task_id)  # download the OpenML task
+for j in range(i, len(benchmark_suite.tasks), 1):  # iterate over all tasks
+    task = openml.tasks.get_task(benchmark_suite.tasks[j])  # download the OpenML task
     tasks.append(task)
-    features, targets = task.get_X_and_y()  # get the data
+    if isinstance(task, openml.OpenMLSupervisedTask):
+        features, targets = task.get_X_and_y()  # get the data
+    else: 
+        features, targets = task.get_X(), None
     a.append((features, targets))
-    i+=1
+   
 
-    if i == 12:
+    if j == stop:
         break
 
 
@@ -38,7 +42,9 @@ from autogoal.kb import SemanticType
 from autogoal_contrib import find_classes
 from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
 
-for i in a:
+failures = 0
+
+for i in range(len(a)):
 
     inputType = SemanticType.infer(a[i][0])
     outputType = SemanticType.infer(a[i][1])
@@ -55,4 +61,10 @@ for i in a:
         evaluation_timeout=5 * Min,
         search_timeout=1 * Hour,
     )
-    classifier.fit(np.nan_to_num(a[i][0]),a[i][1], logger=RichLogger())   
+    try:
+        classifier.fit(np.nan_to_num(a[i][0]),a[i][1], logger=RichLogger())   
+    except:
+        failures+=1
+       
+print(failures , "count fail pipelines")
+    

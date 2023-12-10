@@ -37,7 +37,7 @@ class AutoML:
 
     def __init__(
         self,
-        dataset_type: MetafeatureExtractor,
+        dataset_type: Optional[MetafeatureExtractor] = None,
         input=None,
         output=None,
         random_state=None,
@@ -133,13 +133,14 @@ class AutoML:
             self.current_example = MetafeatureModel(metric= repr(self.objectives),
                                                input_type= repr(self.input),output_type= repr(self.output),
                                                metacaracteristic_model= features,pipelines=[],dataset_type= 
-                                               type(self.dataset_type).__name__, memory_limit= self.memory_limit, evaluation_timeout= self.evaluation_timeout)
+                                               type(self.dataset_type).__name__)
 
           
             db.save(self.current_example)
 
     def fit(self, X, y=None, **kwargs):
-        self.build_metafeature_model(X,y)
+        if self.dataset_type:
+            self.build_metafeature_model(X,y)
         self.input = self._input_type(X)
 
         if not y is None:
@@ -154,10 +155,9 @@ class AutoML:
         )
 
         self.best_pipelines_, self.best_scores_ = search.run(
-            self.search_iterations,metafeature_instance=self.current_example
-            , **kwargs
+            self.search_iterations, **kwargs
         )
-
+       
         self.fit_pipeline(X, y)
 
     def fit_pipeline(self, X, y):

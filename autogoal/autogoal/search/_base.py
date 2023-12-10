@@ -152,7 +152,10 @@ class SearchAlgorithm:
                         fn = self._worst_fns
                         logger.error(e, solution)
                         current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
-                        metafeature_instance.pipelines.append(current_papeline)
+                        try:
+                            metafeature_instance.pipelines.append(current_papeline)
+                        except:
+                            continue
                         db.save(metafeature_instance)
                         if self._errors == "raise":
                             logger.end(best_solutions, best_fns)

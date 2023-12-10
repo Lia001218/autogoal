@@ -2,9 +2,10 @@ import numpy as np
 from odmantic import SyncEngine
 from autogoal.database.metafeature_model import MetafeatureModel
 
-db = SyncEngine(database= 'Metalearning')
+
 
 def create_db_from_tabular_metafeatures():
+    db = SyncEngine(database= 'Metalearning')
     tabular_features_db = []
     tabular_modality = db.find(MetafeatureModel, MetafeatureModel.dataset_type == 'TabularMetafeatureExtractor')
     for i in tabular_modality:

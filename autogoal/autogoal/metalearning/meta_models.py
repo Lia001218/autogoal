@@ -14,7 +14,7 @@ X_train, y_train, X_test, y_test = train_test_split(tabular_data[:-2], tabular_d
 automltabular = AutoML(
     # Declare the input and output types
     dataset_type= TabularMetafeatureExtractor(),
-    input=(MatrixContinuousSparse, Supervised[VectorCategorical]),
+    input=(MatrixContinuousDense, Supervised[VectorCategorical]),
     output=VectorCategorical,
     # Search space configuration
     search_timeout=5*Min,

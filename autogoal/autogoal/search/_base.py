@@ -7,9 +7,10 @@ import statistics
 import math
 import termcolor
 import json
-
+from autogluon.tabular import TabularPredictor
 import autogoal.logging
 from odmantic import SyncEngine
+from autogoal.database.metafeature_model import MetafeatureModel, transform_metafeatures
 from autogoal.database.pipeline_model import PipelineModel
 from autogoal.utils import RestrictedWorkerByJoin, Min, Gb, Sec
 from autogoal.sampling import ReplaySampler
@@ -18,7 +19,7 @@ from rich.panel import Panel
 
 from typing import List, Tuple, Optional
 from autogoal.search.utils import dominates, non_dominated_sort
-
+import os
 
 class SearchAlgorithm:
     def __init__(
@@ -83,7 +84,7 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None):
+    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None, metafeature:Optional[MetafeatureModel] = None ):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -140,23 +141,33 @@ class SearchAlgorithm:
 
                     try:
                         logger.sample_solution(solution)
-                        #TODO llamar a meta_model.predict aki
-                        fn = self._fitness_fn(solution)
+                        vector = transform_metafeatures(metafeature, repr(solution))
+                        # print(os.listdir())
+                        model = TabularPredictor.load('ag-20231212_062818')
+                        valor = model.predict(vector)
+                        #TODO que hacer con el valor 
+                        if valor <= best_solutions[0]/2:
+                            fn = valor
+                           
+                            
+                            
+                        else :
+                            fn = self._fitness_fn(solution)
                         
-                        current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
-                        metafeature_instance.pipelines.append(current_papeline)
-                        db.save(metafeature_instance)
+                        # current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
+                        # metafeature_instance.pipelines.append(current_papeline)
+                        # db.save(metafeature_instance)
                         
 
                     except Exception as e:
                         fn = self._worst_fns
                         logger.error(e, solution)
-                        current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
-                        try:
-                            metafeature_instance.pipelines.append(current_papeline)
-                        except:
-                            continue
-                        db.save(metafeature_instance)
+                        # current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
+                        # try:
+                        #     metafeature_instance.pipelines.append(current_papeline)
+                        # except:
+                        #     continue
+                        # db.save(metafeature_instance)
                         if self._errors == "raise":
                             logger.end(best_solutions, best_fns)
                             raise e from None

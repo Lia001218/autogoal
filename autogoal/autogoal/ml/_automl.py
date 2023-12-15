@@ -137,10 +137,12 @@ class AutoML:
 
           
             db.save(self.current_example)
+            return self.current_example
 
     def fit(self, X, y=None, **kwargs):
+        metafeatures = None
         if self.dataset_type:
-            self.build_metafeature_model(X,y)
+            metafeatures = self.build_metafeature_model(X,y)
         self.input = self._input_type(X)
 
         if not y is None:
@@ -153,11 +155,14 @@ class AutoML:
             errors=self.errors,
             **self.search_kwargs,
         )
-
-        self.best_pipelines_, self.best_scores_ = search.run(
-            self.search_iterations, **kwargs
-        )
-       
+        if metafeatures:
+            self.best_pipelines_, self.best_scores_ = search.run(
+                self.search_iterations,metafeature = metafeatures, **kwargs
+            )
+        else:
+            self.best_pipelines_, self.best_scores_ = search.run(
+                self.search_iterations, **kwargs
+            )
         self.fit_pipeline(X, y)
 
     def fit_pipeline(self, X, y):

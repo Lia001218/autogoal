@@ -1,31 +1,3 @@
-
-from autogoal.utils import Hour, Min
-from autogoal.ml import AutoML
-from autogoal.search import (
-    RichLogger,
-    PESearch,
-)
-
-from autogoal.kb import *
-
-from autogoal_contrib import find_classes
-from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
-
-classifier = AutoML(
-    dataset_type= ImageMetafeatureExtractor(),
-    search_algorithm= PESearch,
-    input=(Tensor4, Supervised[VectorCategorical]),
-    output=VectorCategorical,
-    cross_validation_steps=1,
-    # Since we only want to try neural networks, we restrict
-    # the contrib registry to algorithms matching with `Keras`.
-    registry=find_classes("Keras"),
-    # errors="raise",
-    # Since image classifiers are heavy to train, let's give them a longer timeout...
-    evaluation_timeout=5 * Min,
-    search_timeout=1 * Hour,
-)
-
 import openml
 
     # download dataset with DATASET_ID. Check Dataset detail page for DATASET_ID
@@ -77,8 +49,46 @@ X = []
 for i in os.listdir(ruta):
     temp_path =os.path.join(ruta, i)
     X.append(asarray(Image.open(temp_path)))
+
 X = np.array(X)
 
 y = np.array(vectorized_y)
+
+
+
+
+
+from autogoal.utils import Min, Gb, Hour, Sec
+from autogoal.ml import AutoML
+from autogoal.search import (
+    RichLogger,
+    PESearch,
+)
+
+from autogoal.kb import *
+
+from autogoal_contrib import find_classes
+from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
+input = SemanticType.infer(X)
+output = SemanticType.infer(y)
+classifier = AutoML(
+    dataset_type= ImageMetafeatureExtractor(),
+    search_algorithm= PESearch,
+    input=(Tensor4, Supervised[VectorCategorical]),
+    output=VectorCategorical,
+    cross_validation_steps=1,
+    # Since we only want to try neural networks, we restrict
+    # the contrib registry to algorithms matching with `Keras`.
+    # registry=find_classes("Keras"),
+    # errors="raise",
+    # Since image classifiers are heavy to train, let's give them a longer timeout...
+    evaluation_timeout=30 * Min,
+    search_timeout=2 * Hour,
+    memory_limit=8*Gb,
+)
+
+
+# print(SemanticType.infer(X))
+# print(SemanticType.infer(y))
 classifier.fit(X, y, logger=RichLogger())   
 

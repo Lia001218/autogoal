@@ -7,7 +7,7 @@ import statistics
 import math
 import termcolor
 import json
-from autogluon.tabular import TabularPredictor
+from autogluon.tabular import TabularPredictor, TabularDataset
 import autogoal.logging
 from odmantic import SyncEngine
 from autogoal.database.metafeature_model import MetafeatureModel, transform_metafeatures
@@ -16,7 +16,7 @@ from autogoal.utils import RestrictedWorkerByJoin, Min, Gb, Sec
 from autogoal.sampling import ReplaySampler
 from rich.progress import Progress
 from rich.panel import Panel
-
+import pandas as pd
 from typing import List, Tuple, Optional
 from autogoal.search.utils import dominates, non_dominated_sort
 import os
@@ -143,14 +143,15 @@ class SearchAlgorithm:
                         logger.sample_solution(solution)
                         vector = transform_metafeatures(metafeature, repr(solution))
                         # print(os.listdir())
-                        model = TabularPredictor.load('ag-20231212_062818')
-                        valor = model.predict(vector)
+                        model = TabularPredictor.load('ag-20231216_055717')
+                        name_to_assign = [str(i) for i in range(415)]
+                        data = pd.DataFrame(vector, columns=name_to_assign)
+                        # example = TabularDataset(data)
+                        valor = model.predict(data)
                         #TODO que hacer con el valor 
-                        if valor <= best_solutions[0]/2:
-                            fn = valor
-                           
-                            
-                            
+                        if best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+                            fn = (valor,)
+      
                         else :
                             fn = self._fitness_fn(solution)
                         

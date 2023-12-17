@@ -24,7 +24,7 @@ from autogoal.utils import (
     create_zip_file,
     ensure_directory,
 )
-
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 @nice_repr
 class AutoML:

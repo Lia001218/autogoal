@@ -3,7 +3,7 @@ from odmantic import Field, Model
 from .pipeline_model import PipelineModel
 import numpy as np
 from sentence_transformers import SentenceTransformer
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+
 class MetafeatureModel(Model):
 
     metacaracteristic_model: Optional[list] = None
@@ -18,6 +18,7 @@ class MetafeatureModel(Model):
 def transform_metafeatures(metafeature_instance: MetafeatureModel, solution):
     X = np.array([])
     X = np.append(X, metafeature_instance.metacaracteristic_model)
+    model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     X = np.append(X, model.encode(solution))
-    return X
+    return X.reshape((1,415))
    

@@ -7,32 +7,36 @@ from autogoal.search import ConsoleLogger, RichLogger
 from autogoal.kb import *
 from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 from autogoal.search._base import ConsoleLogger
-
-
+from autogoal.search import (
+    RichLogger,
+    PESearch,
+)
 
 # Load dataset
-X_train, y_train, X_test, y_test = dorothea.load()
 
+X_train, y_train, X_test, y_test = dorothea.load()
+print("loaded")
 
 
 automl = AutoML(
-    # Declare the input and output types
-    
+    # Declare the input and output types 
     dataset_type= TabularMetafeatureExtractor(),
     input=(MatrixContinuousSparse, Supervised[VectorCategorical]),
     output=VectorCategorical,
+    search_algorithm= PESearch,
     # Search space configuration
-    search_timeout=5*Min,
+    search_timeout=30*Min,
     evaluation_timeout= 30 * Sec,
     memory_limit=4*Gb,
-    validation_split=0.3,
-    cross_validation_steps=2,
+    # validation_split=0.3,
+    cross_validation_steps=1,
+    
     # remote_sources=[("172.19.0.3", 8000, "remote-sklearn")],
 )
-
+print("fitting")
     # Run the pipeline search process
-automl.fit(X_train, y_train)
-
+automl.fit(X_train, y_train, logger = RichLogger())
+print('ll')
 # import autogoal_remote.production.client as client
 
 # response = client.post_eval(X_test)

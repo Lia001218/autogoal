@@ -20,7 +20,10 @@ import pandas as pd
 from typing import List, Tuple, Optional
 from autogoal.search.utils import dominates, non_dominated_sort
 import os
-
+from autogoal.metalearning.metafeatures_extractor import MetafeatureExtractor
+from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
+from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
+from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
 class SearchAlgorithm:
     def __init__(
         self,
@@ -84,7 +87,7 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None, metafeature:Optional[MetafeatureModel] = None ):
+    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None, metafeature:Optional[MetafeatureModel] = None, dataset_type: Optional[MetafeatureExtractor] = None ):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -141,20 +144,29 @@ class SearchAlgorithm:
 
                     try:
                         logger.sample_solution(solution)
-                        vector = transform_metafeatures(metafeature, repr(solution))
-                        # print(os.listdir())
-                        model = TabularPredictor.load('ag-20231216_055717')
-                        name_to_assign = [str(i) for i in range(vector.shape[1])]
-                        data = pd.DataFrame(vector, columns=name_to_assign)
-                        # example = TabularDataset(data)
-                        valor = model.predict(data)
-                        #TODO que hacer con el valor 
-                        if best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
-                            fn = (valor,)
+                        if metafeature:
+                            vector = transform_metafeatures(metafeature, repr(solution))
+                            # print(os.listdir())
+                            name_to_assign = [str(i) for i in range(vector.shape[1])]
+                            data = pd.DataFrame(vector, columns=name_to_assign)
+                            # example = TabularDataset(data)
+                            if dataset_type is TabularMetafeatureExtractor:
+                                model = TabularPredictor.load('ag-20231216_055717')
+                                valor = model.predict(data)
+                            elif dataset_type is TextMetafeatureExtractor:
+                                model = []
+                                valor = model.predict(data)
+                            else:
+                                model = []
+                                valor = model.predict(data)
+                                #TODO que hacer con el valor 
+                            if best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+                                fn = (valor,)
       
-                        else :
+                            else :
+                                fn = self._fitness_fn(solution)
+                        else:
                             fn = self._fitness_fn(solution)
-                        
                         # current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
                         # metafeature_instance.pipelines.append(current_papeline)
                         # db.save(metafeature_instance)

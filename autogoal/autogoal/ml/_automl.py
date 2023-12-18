@@ -157,7 +157,7 @@ class AutoML:
         )
         if metafeatures:
             self.best_pipelines_, self.best_scores_ = search.run(
-                self.search_iterations,metafeature = metafeatures, **kwargs
+                self.search_iterations,metafeature = metafeatures,dataset_type=self.dataset_type, **kwargs
             )
         else:
             self.best_pipelines_, self.best_scores_ = search.run(

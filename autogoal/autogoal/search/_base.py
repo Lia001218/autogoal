@@ -144,7 +144,7 @@ class SearchAlgorithm:
                         vector = transform_metafeatures(metafeature, repr(solution))
                         # print(os.listdir())
                         model = TabularPredictor.load('ag-20231216_055717')
-                        name_to_assign = [str(i) for i in range(415)]
+                        name_to_assign = [str(i) for i in range(vector.shape[1])]
                         data = pd.DataFrame(vector, columns=name_to_assign)
                         # example = TabularDataset(data)
                         valor = model.predict(data)

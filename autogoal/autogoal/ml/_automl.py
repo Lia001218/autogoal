@@ -54,6 +54,8 @@ class AutoML:
         remote_sources: List[Tuple[str, int] or str] = None,
         memory_limit:Optional[float] =None,
         evaluation_timeout: Optional[float]=None,
+        extract_metafeatures: bool = False,
+        measure_time: bool = False,
         **search_kwargs,
     ):
   
@@ -77,6 +79,8 @@ class AutoML:
         self.dataset_type = dataset_type
         self.memory_limit = memory_limit
         self.evaluation_timeout = evaluation_timeout
+        self.extract_metafeatures = extract_metafeatures
+        self.measure_time = measure_time
         
         # If objectives were not specified as iterables then create the correct objectives object
         if not type(self.objectives) is type(tuple) and not type(
@@ -143,6 +147,7 @@ class AutoML:
         metafeatures = None
         if self.dataset_type:
             metafeatures = self.build_metafeature_model(X,y)
+            print(metafeatures)
         self.input = self._input_type(X)
 
         if not y is None:
@@ -157,11 +162,13 @@ class AutoML:
         )
         if metafeatures:
             self.best_pipelines_, self.best_scores_ = search.run(
-                self.search_iterations,metafeature = metafeatures,dataset_type=self.dataset_type, **kwargs
+                self.search_iterations,metafeature = metafeatures,dataset_type=self.dataset_type,
+                extract_metafeatures=self.extract_metafeatures, measure_time = self.measure_time,**kwargs
             )
         else:
             self.best_pipelines_, self.best_scores_ = search.run(
-                self.search_iterations, **kwargs
+                self.search_iterations,extract_metafeatures=self.extract_metafeatures,
+                 measure_time = self.measure_time, **kwargs
             )
         self.fit_pipeline(X, y)
 

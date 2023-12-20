@@ -13,7 +13,7 @@
 from autogoal.ml import AutoML
 from autogoal.search import RichLogger
 from autogoal.kb import *
-
+from autogoal.utils import Min, Gb, Hour, Sec
 # To restrict which types of algorithms can `AutoML` use, we will manually invoke `find_classes`.
 
 from autogoal_contrib import find_classes
@@ -34,7 +34,11 @@ classifier = AutoML(
     cross_validation_steps=1,
     # Since we only want to try neural networks, we restrict
     # the contrib registry to algorithms matching with `Keras`.
-    registry=find_classes("Keras"),
+    # registry=find_classes("Keras"),
+    measure_time= True,
+    evaluation_timeout=5 * Min,
+    search_timeout=1 * Hour,
+
 )
 
 # Basic logging configuration.

@@ -87,7 +87,8 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None, metafeature_instance: Optional[PipelineModel] = None, metafeature:Optional[MetafeatureModel] = None, dataset_type: Optional[MetafeatureExtractor] = None ):
+    def run(self, generations=None, logger=None, metafeature_instance: Optional[MetafeatureModel] = None, metafeature:Optional[MetafeatureModel] = None, dataset_type: Optional[MetafeatureExtractor] = None,
+            extract_metafeatures: bool = False, measure_time: bool = False ):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -167,20 +168,22 @@ class SearchAlgorithm:
                                 fn = self._fitness_fn(solution)
                         else:
                             fn = self._fitness_fn(solution)
-                        # current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
-                        # metafeature_instance.pipelines.append(current_papeline)
-                        # db.save(metafeature_instance)
+                        if extract_metafeatures:
+                            current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
+                            metafeature_instance.pipelines.append(current_papeline)
+                            db.save(metafeature_instance)
                         
 
                     except Exception as e:
                         fn = self._worst_fns
                         logger.error(e, solution)
-                        # current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
-                        # try:
-                        #     metafeature_instance.pipelines.append(current_papeline)
-                        # except:
-                        #     continue
-                        # db.save(metafeature_instance)
+                        if extract_metafeatures:
+                            current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
+                            try:
+                                metafeature_instance.pipelines.append(current_papeline)
+                            except:
+                                continue
+                            db.save(metafeature_instance)
                         if self._errors == "raise":
                             logger.end(best_solutions, best_fns)
                             raise e from None
@@ -197,6 +200,10 @@ class SearchAlgorithm:
                         new_best_fns,
                         dominated_solutions,
                     ) = self._rank_solutions(best_solutions, best_fns, solutions, fns)
+                    if measure_time:
+                        if new_best_fns[0][0] > -math.inf and best_fns[0][0] != new_best_fns[0][0]:
+                            f = open('measure_time.txt','w+')
+                            f.write(str(time.time()), str(new_best_fns[0][0]), "\n")
 
                     if len(best_fns) == 0 or new_best_fns != best_fns:
                         logger.update_best(
@@ -208,6 +215,7 @@ class SearchAlgorithm:
                             best_fns,
                             dominated_solutions,
                         )
+                        #TODO: es aki 
                         best_solutions, best_fns = new_best_solutions, new_best_fns
                         improvement = True
                         if self._target_fn is not None and any(

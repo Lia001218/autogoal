@@ -26,7 +26,7 @@ from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtract
 # i.e., supervised classification from matrix-like features.
 
 classifier = AutoML(
-    dataset_type= TabularMetafeatureExtractor(),
+    # dataset_type= TabularMetafeatureExtractor(),
     input=(MatrixContinuousDense, Supervised[VectorCategorical]),
     output=VectorCategorical,
     # We will set `cross_validation_steps=1` to reduce the time that we spend on each pipeline.
@@ -38,6 +38,7 @@ classifier = AutoML(
     measure_time= True,
     evaluation_timeout=5 * Min,
     search_timeout=1 * Hour,
+    random_state=42,
 
 )
 
@@ -57,8 +58,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 # By default, this will run for 5 minutes.
 
 classifier.fit(X_train, y_train, logger=loggers)
-score = classifier.score(X_test, y_test)
+# score = classifier.score(X_test, y_test)
 
 # Let's see what we got!
 
-print(score)
+# print(score)

@@ -94,6 +94,8 @@ class SearchAlgorithm:
         Returns:
             Tuple `([best1, ..., bestn], [fn1, ..., fnn])` of the best found solutions and their corresponding fitnesses.
         """
+        if measure_time:
+            start_time = time.time()
         if logger is None:
             logger = self._logger
 
@@ -145,29 +147,43 @@ class SearchAlgorithm:
 
                     try:
                         logger.sample_solution(solution)
+                        # print('metafeature', metafeature)
                         if metafeature:
+                            # print('entro')
                             vector = transform_metafeatures(metafeature, repr(solution))
-                            # print(os.listdir())
+                            # print('vector', vector)
+                            # print(vector.shape)
                             name_to_assign = [str(i) for i in range(vector.shape[1])]
                             data = pd.DataFrame(vector, columns=name_to_assign)
                             # example = TabularDataset(data)
-                            if dataset_type is TabularMetafeatureExtractor:
-                                model = TabularPredictor.load('ag-20231216_055717')
-                                valor = model.predict(data)
-                            elif dataset_type is TextMetafeatureExtractor:
-                                model = []
+                            print(isinstance(dataset_type,TabularMetafeatureExtractor))
+                            if isinstance(dataset_type,TabularMetafeatureExtractor):
+                                model = TabularPredictor.load('AutoGluonModels/ag-20231216_055717')
+                                valor = model.predict(data)[0]
+                            elif isinstance(dataset_type,TextMetafeatureExtractor):
+                                model = TabularPredictor.load('AutoGluonModels/ag-20231218_054926')
                                 valor = model.predict(data)
                             else:
                                 model = []
                                 valor = model.predict(data)
-                                #TODO que hacer con el valor 
-                            if best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
-                                fn = (valor,)
+                                #TODO: que hacer con el valor 
+                            if len(best_fns)> 0 and best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+                                # fn = (valor,)
+                                return best_solutions, best_fns
       
                             else :
                                 fn = self._fitness_fn(solution)
+                        
                         else:
+                            # print('no entro')
                             fn = self._fitness_fn(solution)
+                        # print('despues', fn)
+                        if measure_time:
+                            current_time = time.time() - start_time
+                            f = open('measure_time_alternative.txt','a')
+                            f.write(f"{current_time}, {fn[0]} \n")
+
+
                         if extract_metafeatures:
                             current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
                             metafeature_instance.pipelines.append(current_papeline)
@@ -194,16 +210,12 @@ class SearchAlgorithm:
                     logger.eval_solution(solution, fn)
                     solutions.append(solution)
                     fns.append(fn)
-
                     (
                         new_best_solutions,
                         new_best_fns,
                         dominated_solutions,
                     ) = self._rank_solutions(best_solutions, best_fns, solutions, fns)
-                    if measure_time:
-                        if new_best_fns[0][0] > -math.inf and best_fns[0][0] != new_best_fns[0][0]:
-                            f = open('measure_time.txt','w+')
-                            f.write(str(time.time()), str(new_best_fns[0][0]), "\n")
+                    
 
                     if len(best_fns) == 0 or new_best_fns != best_fns:
                         logger.update_best(

@@ -20,5 +20,6 @@ def transform_metafeatures(metafeature_instance: MetafeatureModel, solution):
     X = np.append(X, metafeature_instance.metacaracteristic_model)
     model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     X = np.append(X, model.encode(solution))
-    return X.reshape((1,X.shape[0]))
+    X = X.reshape((1,X.shape[0]))
+    return X
    

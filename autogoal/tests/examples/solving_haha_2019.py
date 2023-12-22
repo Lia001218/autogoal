@@ -52,7 +52,7 @@ from autogoal.kb import Seq, Sentence, VectorCategorical, Supervised
 from autogoal_contrib import find_classes
 from sklearn.metrics import f1_score
 from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
-
+from autogoal.utils import Min, Gb, Hour, Sec
 # Next, we parse the command line arguments to configure the experiment.
 
 # ## Parsing arguments
@@ -91,16 +91,13 @@ for cls in find_classes():
 
 classifier = AutoML(
     dataset_type= TextMetafeatureExtractor(),
-    search_algorithm=PESearch,
     input=(Seq[Sentence], Supervised[VectorCategorical]),
     output=VectorCategorical,
-    search_iterations=args.iterations,
-    objectives=f1_score,
-    errors="warn",
-    pop_size=args.popsize,
-    search_timeout=args.global_timeout,
-    evaluation_timeout=args.timeout,
-    memory_limit=args.memory * 1024**3,
+    cross_validation_steps=1,
+    measure_time= True,
+    evaluation_timeout=5 * Min,
+    search_timeout=1 * Hour,
+    random_state=42,
 )
 
 loggers = [RichLogger()]
@@ -121,6 +118,6 @@ loggers = [RichLogger()]
 X_train, y_train, X_test, y_test = haha.load(max_examples=args.examples)
 
 classifier.fit(X_train, y_train, logger=loggers)
-score = classifier.score(X_test, y_test)
+# score = classifier.score(X_test, y_test)
 
-print(score)
+# print(score)

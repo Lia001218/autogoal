@@ -144,7 +144,7 @@ class SearchAlgorithm:
 
                     if not self._allow_duplicates and repr(solution) in seen:
                         continue
-
+                    is_bad_solution = False
                     try:
                         logger.sample_solution(solution)
                         # print('metafeature', metafeature)
@@ -161,15 +161,19 @@ class SearchAlgorithm:
                                 model = TabularPredictor.load('AutoGluonModels/ag-20231216_055717')
                                 valor = model.predict(data)[0]
                             elif isinstance(dataset_type,TextMetafeatureExtractor):
-                                model = TabularPredictor.load('AutoGluonModels/ag-20231218_054926')
+                                print('dentro de text')
+                                model = TabularPredictor.load('AutoGluonModels/ag-20231218_054926', check_packages=True)
+                                print('despues de cargar')
                                 valor = model.predict(data)
+                                print(valor,'hola')
                             else:
                                 model = []
                                 valor = model.predict(data)
                                 #TODO: que hacer con el valor 
                             if len(best_fns)> 0 and best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
-                                # fn = (valor,)
-                                return best_solutions, best_fns
+                                fn = (valor,)
+                                is_bad_solution = True
+                                # return best_solutions, best_fns
       
                             else :
                                 fn = self._fitness_fn(solution)
@@ -179,8 +183,9 @@ class SearchAlgorithm:
                             fn = self._fitness_fn(solution)
                         # print('despues', fn)
                         if measure_time:
+                        
                             current_time = time.time() - start_time
-                            f = open('measure_time_alternative.txt','a')
+                            f = open('HAHAmeasure_time.txt','a')
                             f.write(f"{current_time}, {fn[0]} \n")
 
 
@@ -191,6 +196,7 @@ class SearchAlgorithm:
                         
 
                     except Exception as e:
+                        print('exception Lia', e)
                         fn = self._worst_fns
                         logger.error(e, solution)
                         if extract_metafeatures:

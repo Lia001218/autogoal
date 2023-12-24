@@ -158,6 +158,8 @@ class AutoML:
             self.make_fitness_fn(X, y),
             random_state=self.random_state,
             errors=self.errors,
+            evaluation_timeout=self.evaluation_timeout,
+            memory_limit=self.memory_limit,
             **self.search_kwargs,
         )
         if metafeatures:

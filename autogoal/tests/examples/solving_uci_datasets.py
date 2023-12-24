@@ -56,7 +56,7 @@ from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtract
 # From `sklearn` we will use `train_test_split` to build train and validation sets.
 
 from sklearn.model_selection import train_test_split
-from autogoal.utils import Min, Gb, Hour, Sec
+
 # From `autogoal` we need a bunch of datasets.
 
 from autogoal import datasets
@@ -69,7 +69,7 @@ from autogoal.datasets import (
     yeast,
     german_credit,
 )
-
+from autogoal.utils import Min, Gb, Hour, Sec
 # We will also import this annotation type.
 
 from autogoal.kb import MatrixContinuousDense, VectorCategorical
@@ -112,9 +112,9 @@ parser.add_argument("--target", default=1.0, type=float)
 
 valid_datasets = [
     "abalone",
-    "cars",
-    "dorothea",
-    "gisette",
+    # "cars",
+    # "dorothea",
+    # "gisette",
     "shuttle",
     "yeast",
     "german_credit",
@@ -132,54 +132,54 @@ args = parser.parse_args()
 if args.dataset != "all":
     valid_datasets = [args.dataset]
 
-# for epoch in range(args.epochs):
-#     for dataset in valid_datasets:
-#         print("=============================================")
-#         print(" Running dataset: %s - Epoch: %s" % (dataset, epoch))
-#         print("=============================================")
-#         data = getattr(datasets, dataset).load()
+for epoch in range(args.epochs):
+    for dataset in valid_datasets:
+        print("=============================================")
+        print(" Running dataset: %s - Epoch: %s" % (dataset, epoch))
+        print("=============================================")
+        data = getattr(datasets, dataset).load()
 
-#         # Here we dynamically load the corresponding dataset and,
-#         # if necesary, split it into training and testing sets.
+        # Here we dynamically load the corresponding dataset and,
+        # if necesary, split it into training and testing sets.
 
-#         if len(data) == 4:
-#             X_train, X_test, y_train, y_test = data
-#         else:
-#             X, y = data
-#             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+        if len(data) == 4:
+            X_train, X_test, y_train, y_test = data
+        else:
+            X, y = data
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
         # Finally we can instantiate out `AutoML` with all the custom
         # parameters we received from the command line.
 
-    classifier = AutoML(
-        dataset_type= TabularMetafeatureExtractor(),
-        input=(MatrixContinuousDense, Supervised[VectorCategorical]),
-        output=VectorCategorical,
-        cross_validation_steps=1,
-        measure_time= True,
-        evaluation_timeout=5 * Min,
-        search_timeout=1 * Hour,
-        random_state=42,
-    )
+        classifier = AutoML(
+            # dataset_type= TabularMetafeatureExtractor(),
+            input=(MatrixContinuousDense, Supervised[VectorCategorical]),
+            output=VectorCategorical,
+            cross_validation_steps=1,
+            measure_time= True,
+            evaluation_timeout=5 * Min,
+            search_timeout=1 * Hour,
+            random_state=42,
+        )
 
-        # logger = MemoryLogger()
-    loggers = [RichLogger()]
+        logger = MemoryLogger()
+        loggers = [RichLogger()]
 
         # `TelegramLogger` outputs debug information to a custom Telegram channel, if configured.
 
-        # if args.token:
-        #     from autogoal.contrib.telegram import TelegramLogger
+        if args.token:
+            from autogoal.contrib.telegram import TelegramLogger
 
-        #     telegram = TelegramLogger(
-        #         token=args.token,
-        #         name=f"UCI dataset=`{dataset}` run=`{epoch}`",
-        #         channel=args.channel,
-        #     )
-        #     loggers.append(telegram)
+            telegram = TelegramLogger(
+                token=args.token,
+                name=f"UCI dataset=`{dataset}` run=`{epoch}`",
+                channel=args.channel,
+            )
+            loggers.append(telegram)
 
         # Finally, we run the AutoML classifier once and compute the score on an independent test-set.
 
-    classifier.fit(X_train, y_train, logger=loggers)
+        classifier.fit(X_train, y_train, logger=loggers)
         # score = classifier.score(X_test, y_test)
 
         # print(score)
@@ -188,23 +188,23 @@ if args.dataset != "all":
 
         # And store the results on a log file.
 
-        # with open("uci_datasets.log", "a") as fp:
-        #     fp.write(
-        #         json.dumps(
-        #             dict(
-        #                 dataset=dataset,
-        #                 score=score,
-        #                 generation_best=logger.generation_best_fn,
-        #                 generation_mean=logger.generation_mean_fn,
-        #                 best_pipeline=repr(classifier.best_pipeline_),
-        #                 search_iterations=args.iterations,
-        #                 pop_size=args.popsize,
-        #                 selection=args.selection,
-        #                 evaluation_timeout=args.timeout,
-        #                 memory_limit=args.memory * 1024**3,
-        #                 early_stop=args.early_stop,
-        #                 search_timeout=args.global_timeout,
-        #             )
-        #         )
-        #     )
-        #     fp.write("\n")
+        with open("uci_datasets.log", "a") as fp:
+            fp.write(
+                json.dumps(
+                    dict(
+                        dataset=dataset,
+                        # score=score,
+                        generation_best=logger.generation_best_fn,
+                        generation_mean=logger.generation_mean_fn,
+                        best_pipeline=repr(classifier.best_pipeline_),
+                        search_iterations=args.iterations,
+                        pop_size=args.popsize,
+                        selection=args.selection,
+                        evaluation_timeout=args.timeout,
+                        memory_limit=args.memory * 1024**3,
+                        early_stop=args.early_stop,
+                        search_timeout=args.global_timeout,
+                    )
+                )
+            )
+            fp.write("\n")

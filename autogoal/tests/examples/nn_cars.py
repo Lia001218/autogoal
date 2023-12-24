@@ -35,7 +35,7 @@ classifier = AutoML(
     # Since we only want to try neural networks, we restrict
     # the contrib registry to algorithms matching with `Keras`.
     # registry=find_classes("Keras"),
-    measure_time= True,
+    measure_time= False,
     evaluation_timeout=5 * Min,
     search_timeout=1 * Hour,
     random_state=42,

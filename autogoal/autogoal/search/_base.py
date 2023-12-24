@@ -24,6 +24,9 @@ from autogoal.metalearning.metafeatures_extractor import MetafeatureExtractor
 from autogoal.metalearning.tabular_metafeatures import TabularMetafeatureExtractor
 from autogoal.metalearning.text_metafeatures import TextMetafeatureExtractor
 from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics import confusion_matrix
+import numpy as np
 class SearchAlgorithm:
     def __init__(
         self,
@@ -87,8 +90,16 @@ class SearchAlgorithm:
             )
         )
 
-    def run(self, generations=None, logger=None, metafeature_instance: Optional[MetafeatureModel] = None, metafeature:Optional[MetafeatureModel] = None, dataset_type: Optional[MetafeatureExtractor] = None,
-            extract_metafeatures: bool = False, measure_time: bool = False ):
+    def run(
+        self,
+        generations=None,
+        logger=None,
+        metafeature_instance: Optional[MetafeatureModel] = None,
+        metafeature: Optional[MetafeatureModel] = None,
+        dataset_type: Optional[MetafeatureExtractor] = None,
+        extract_metafeatures: bool = False,
+        measure_time: bool = False,
+    ):
         """Runs the search performing at most `generations` of `fitness_fn`.
 
         Returns:
@@ -113,13 +124,28 @@ class SearchAlgorithm:
         no_improvement = 0
         start_time = time.time()
         seen = set()
+        if metafeature:
+            if isinstance(dataset_type, TabularMetafeatureExtractor):
+                model = TabularPredictor.load("AutoGluonModels/ag-20231216_055717")
 
+            elif isinstance(dataset_type, TextMetafeatureExtractor):
+                model = TabularPredictor.load(
+                    "AutoGluonModels/ag-20231218_054926", check_packages=True
+                )
+
+            else:
+                model = []
+
+        embeddings_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
         best_solutions = []
         best_fns = []
 
         logger.begin(generations, self._pop_size)
-
+        y_predic = []
+        y_real = []
+        real_and_predicted_values = []
         try:
+
             while generations > 0:
                 stop = False
 
@@ -130,7 +156,7 @@ class SearchAlgorithm:
                 fns = []
 
                 improvement = False
-                db = SyncEngine(database= 'Metalearning')
+                db = SyncEngine(database="Metalearning")
                 for _ in range(self._pop_size):
                     solution = None
 
@@ -145,62 +171,71 @@ class SearchAlgorithm:
                     if not self._allow_duplicates and repr(solution) in seen:
                         continue
                     is_bad_solution = False
+                   
                     try:
                         logger.sample_solution(solution)
                         # print('metafeature', metafeature)
-                        if metafeature:
+                        if (
+                            metafeature
+                            and len(best_fns) > 0
+                            and best_fns[0][0] > -math.inf
+                        ):
                             # print('entro')
-                            vector = transform_metafeatures(metafeature, repr(solution))
+                            vector = transform_metafeatures(
+                                metafeature, repr(solution), embeddings_model
+                            )
                             # print('vector', vector)
                             # print(vector.shape)
                             name_to_assign = [str(i) for i in range(vector.shape[1])]
                             data = pd.DataFrame(vector, columns=name_to_assign)
-                            # example = TabularDataset(data)
-                            print(isinstance(dataset_type,TabularMetafeatureExtractor))
-                            if isinstance(dataset_type,TabularMetafeatureExtractor):
-                                model = TabularPredictor.load('AutoGluonModels/ag-20231216_055717')
-                                valor = model.predict(data)[0]
-                            elif isinstance(dataset_type,TextMetafeatureExtractor):
-                                print('dentro de text')
-                                model = TabularPredictor.load('AutoGluonModels/ag-20231218_054926', check_packages=True)
-                                print('despues de cargar')
-                                valor = model.predict(data)
-                                print(valor,'hola')
+
+                            valor = model.predict(data)[0]
+                            true_value = self._fitness_fn(solution)
+                            if  true_value <= best_fns[0][0] / 2:
+                                y_real.append(True)
+                                print('real')
                             else:
-                                model = []
-                                valor = model.predict(data)
-                                #TODO: que hacer con el valor 
-                            if len(best_fns)> 0 and best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+                                y_real.append(False)
+                                print('real f')
+                            # TODO: que hacer con el valor
+                            # if len(best_fns)> 0 and best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+                            if valor <= best_fns[0][0] / 2:
+                                y_predic.append(True)
+                                print('predic')
                                 fn = (valor,)
                                 is_bad_solution = True
+                                real_and_predicted_values.append((true_value, True))
                                 # return best_solutions, best_fns
-      
-                            else :
-                                fn = self._fitness_fn(solution)
-                        
+                            else:
+                                y_predic.append(False)
+                                fn = true_value
+                                real_and_predicted_values.append((true_value, False))
                         else:
                             # print('no entro')
                             fn = self._fitness_fn(solution)
                         # print('despues', fn)
-                        if measure_time:
-                        
+                        if measure_time and not is_bad_solution:
                             current_time = time.time() - start_time
-                            f = open('HAHAmeasure_time.txt','a')
-                            f.write(f"{current_time}, {fn[0]} \n")
-
+                            with open("abalone_measure_time.txt", "a") as f:
+                                f.write(f"{current_time}, {fn[0]} \n")
+                            # f = open('HAHAmeasure_time.txt','a')
+                            # f.write(f"{current_time}, {fn[0]} \n")
 
                         if extract_metafeatures:
-                            current_papeline = PipelineModel(algorithm_flow= repr(solution), eval_result= fn)
+                            current_papeline = PipelineModel(
+                                algorithm_flow=repr(solution), eval_result=fn
+                            )
                             metafeature_instance.pipelines.append(current_papeline)
                             db.save(metafeature_instance)
-                        
 
                     except Exception as e:
-                        print('exception Lia', e)
+                  
                         fn = self._worst_fns
                         logger.error(e, solution)
                         if extract_metafeatures:
-                            current_papeline = PipelineModel(algorithm_flow= repr(solution), error_result= str(e))
+                            current_papeline = PipelineModel(
+                                algorithm_flow=repr(solution), error_result=str(e)
+                            )
                             try:
                                 metafeature_instance.pipelines.append(current_papeline)
                             except:
@@ -213,15 +248,19 @@ class SearchAlgorithm:
                     if not self._allow_duplicates:
                         seen.add(repr(solution))
 
+                    fns.append(fn)
+
+                    if is_bad_solution:
+                        continue
+
                     logger.eval_solution(solution, fn)
                     solutions.append(solution)
-                    fns.append(fn)
+
                     (
                         new_best_solutions,
                         new_best_fns,
                         dominated_solutions,
                     ) = self._rank_solutions(best_solutions, best_fns, solutions, fns)
-                    
 
                     if len(best_fns) == 0 or new_best_fns != best_fns:
                         logger.update_best(
@@ -233,7 +272,7 @@ class SearchAlgorithm:
                             best_fns,
                             dominated_solutions,
                         )
-                        #TODO: es aki 
+                        # TODO: es aki
                         best_solutions, best_fns = new_best_solutions, new_best_fns
                         improvement = True
                         if self._target_fn is not None and any(
@@ -284,6 +323,11 @@ class SearchAlgorithm:
             pass
 
         logger.end(best_solutions, best_fns)
+        print(len(y_real), len(y_predic))
+        print(f"y real: {y_real}, y_pred: {y_predic}")
+        metric_matric = confusion_matrix(y_real, y_predic)
+        np.save("confusion_matrix.npy", metric_matric)
+        np.save("real_and_predicted_values.npy", np.array(real_and_predicted_values))
         return best_solutions, best_fns
 
     def _rank_solutions(self, best_solutions, best_fns, gen_solutions, gen_fns):
@@ -523,7 +567,11 @@ class ProgressLogger(Logger):
         self.pop_counter.update()
         self.total_counter.update()
 
-    def start_generation(self, generations, best_fn,):
+    def start_generation(
+        self,
+        generations,
+        best_fn,
+    ):
         self.pop_counter.count = 0
 
     def update_best(self, new_best, new_fn, *args):

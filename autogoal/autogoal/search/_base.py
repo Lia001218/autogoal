@@ -27,6 +27,8 @@ from autogoal.metalearning.image_metafeatures import ImageMetafeatureExtractor
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics import confusion_matrix
 import numpy as np
+
+
 class SearchAlgorithm:
     def __init__(
         self,
@@ -40,7 +42,7 @@ class SearchAlgorithm:
         memory_limit: int = 4 * Gb,
         search_timeout: int = 5 * Min,
         target_fn=None,
-        allow_duplicates=True,
+        allow_duplicates=False,
         logger=None,
         ranking_fn=None,
     ):
@@ -141,11 +143,14 @@ class SearchAlgorithm:
         best_fns = []
 
         logger.begin(generations, self._pop_size)
+        pipelines_to_check = []
+        potential_pipelines = []
         y_predic = []
         y_real = []
+        y_potential_predict =[]
+        y_potential_real =[]
         real_and_predicted_values = []
         try:
-
             while generations > 0:
                 stop = False
 
@@ -171,7 +176,7 @@ class SearchAlgorithm:
                     if not self._allow_duplicates and repr(solution) in seen:
                         continue
                     is_bad_solution = False
-                   
+
                     try:
                         logger.sample_solution(solution)
                         # print('metafeature', metafeature)
@@ -181,6 +186,7 @@ class SearchAlgorithm:
                             and best_fns[0][0] > -math.inf
                         ):
                             # print('entro')
+                            # true_value = self._fitness_fn(solution)
                             vector = transform_metafeatures(
                                 metafeature, repr(solution), embeddings_model
                             )
@@ -190,33 +196,35 @@ class SearchAlgorithm:
                             data = pd.DataFrame(vector, columns=name_to_assign)
 
                             valor = model.predict(data)[0]
-                            true_value = self._fitness_fn(solution)
-                            if  true_value <= best_fns[0][0] / 2:
-                                y_real.append(True)
-                                print('real')
-                            else:
-                                y_real.append(False)
-                                print('real f')
+                            # if  true_value[0] <= best_fns[0][0] / 2:
+                            #     y_real.append(True)
+                            # else:
+                            #     y_real.append(False)
                             # TODO: que hacer con el valor
                             # if len(best_fns)> 0 and best_fns[0][0]/2 > -math.inf and valor <= best_fns[0][0]/2:
+
+                            # real_and_predicted_values.append((true_value[0], valor))
                             if valor <= best_fns[0][0] / 2:
-                                y_predic.append(True)
-                                print('predic')
-                                fn = (valor,)
+                                y_predic.append(valor)
+                                # print('predic')
                                 is_bad_solution = True
-                                real_and_predicted_values.append((true_value, True))
+                                pipelines_to_check.append(solution)
+                                fn = (valor,)
                                 # return best_solutions, best_fns
                             else:
-                                y_predic.append(False)
-                                fn = true_value
-                                real_and_predicted_values.append((true_value, False))
+                                y_potential_predict.append(valor)
+                                potential_pipelines.append(solution)
+                                # y_predic.append(False)
+                                fn = self._fitness_fn(solution)
+                                print(f"fn: {fn}")
+                                # real_and_predicted_values.append((true_value, valor))
                         else:
                             # print('no entro')
                             fn = self._fitness_fn(solution)
                         # print('despues', fn)
                         if measure_time and not is_bad_solution:
                             current_time = time.time() - start_time
-                            with open("abalone_measure_time.txt", "a") as f:
+                            with open("nncars_measure_time12.txt", "a") as f:
                                 f.write(f"{current_time}, {fn[0]} \n")
                             # f = open('HAHAmeasure_time.txt','a')
                             # f.write(f"{current_time}, {fn[0]} \n")
@@ -229,7 +237,6 @@ class SearchAlgorithm:
                             db.save(metafeature_instance)
 
                     except Exception as e:
-                  
                         fn = self._worst_fns
                         logger.error(e, solution)
                         if extract_metafeatures:
@@ -272,7 +279,7 @@ class SearchAlgorithm:
                             best_fns,
                             dominated_solutions,
                         )
-                        # TODO: es aki
+                       
                         best_solutions, best_fns = new_best_solutions, new_best_fns
                         improvement = True
                         if self._target_fn is not None and any(
@@ -323,11 +330,34 @@ class SearchAlgorithm:
             pass
 
         logger.end(best_solutions, best_fns)
-        print(len(y_real), len(y_predic))
-        print(f"y real: {y_real}, y_pred: {y_predic}")
-        metric_matric = confusion_matrix(y_real, y_predic)
-        np.save("confusion_matrix.npy", metric_matric)
-        np.save("real_and_predicted_values.npy", np.array(real_and_predicted_values))
+        if metafeature:
+            while len(pipelines_to_check) > 0:
+                print(f"pipelines to check left: {len(pipelines_to_check)}")
+                s = pipelines_to_check.pop()
+                try:
+                    y_real.append(self._fitness_fn(s)[0])
+                except:
+                    y_real.append(-1)
+
+            print(len(y_real), len(y_predic))
+            print(f"y real: {y_real}, y_pred: {y_predic}")
+            # print(f"real and predicted values: {real_and_predicted_values}")
+            # metric_matric = confusion_matrix(y_real, y_predic)
+            # np.save("confusion_matrix.npy", metric_matric)
+            # np.save("real_and_predicted_values.npy", np.array(real_and_predicted_values))
+            np.save("y_real.npy", np.array(y_real))
+            np.save("y_pred.npy", np.array(y_predic))
+            while len(potential_pipelines)>0:
+                print(f"potential pipelines left: {len(potential_pipelines)}")
+                s = potential_pipelines.pop()
+                try:
+                    y_potential_real.append(self._fitness_fn(s)[0])
+                except:
+                    y_potential_real.append(-1)
+            print(len(y_potential_real), len(y_potential_predict))
+            print(f"y real: {y_potential_real}, y_pred: {y_potential_predict}")
+            np.save("y_potential_real.npy", np.array(y_potential_real))
+            np.save("y_potential_pred.npy", np.array(y_potential_predict))
         return best_solutions, best_fns
 
     def _rank_solutions(self, best_solutions, best_fns, gen_solutions, gen_fns):

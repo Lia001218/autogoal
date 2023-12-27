@@ -35,7 +35,7 @@ classifier = AutoML(
     # Since we only want to try neural networks, we restrict
     # the contrib registry to algorithms matching with `Keras`.
     # registry=find_classes("Keras"),
-    measure_time= False,
+    measure_time= True,
     evaluation_timeout=5 * Min,
     search_timeout=1 * Hour,
     random_state=42,
@@ -53,7 +53,7 @@ from autogoal.datasets import cars
 from sklearn.model_selection import train_test_split
 
 X, y = cars.load()
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42)
 
 # By default, this will run for 5 minutes.
 
